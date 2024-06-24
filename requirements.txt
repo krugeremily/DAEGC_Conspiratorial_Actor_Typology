@@ -1,0 +1,15 @@
+#general
+numpy==1.26.2
+pandas==2.1.3
+regex==2023.12.25
+
+
+#plotting
+matplotlib==3.8.1
+seaborn==0.13.1
+
+
+#nlp
+nltk==3.8.1
+scikit-learn==1.5.0
+spacy==3.7.4
