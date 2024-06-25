@@ -2,4 +2,8 @@
 csh_venv/
 data/
 
+# Obsidian
+Obsidian - CSH Internship/*.obsidian
+
 # data 
+data/
