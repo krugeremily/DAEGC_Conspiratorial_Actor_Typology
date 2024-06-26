@@ -13,3 +13,10 @@ seaborn==0.13.1
 nltk==3.8.1
 scikit-learn==1.5.0
 spacy==3.7.4
+
+#still testing if needed
+textstat==0.7.3
+transformers==4.41.2
+torch==2.3.1
+germansentiment==1.1.0
+sentencepiece==0.2.0 #necessary for roberta sentiment model
