@@ -1,10 +1,9 @@
 https://docs.google.com/document/d/1B9S35aB3A0MxObnLSVdA7QrruzmPaArz_OkyyoquPr8/edit?pli=1
 # Monday, 24/06/2024
 
-**Tasks:**
-
-- Find further linguistic features and a way to extract them
-- Understand the dataset and each column
+> [!Tasks]
+> - Find further linguistic features and a way to extract them
+> - Understand the dataset and each column
 
 ## Understanding Dataset Columns
 
@@ -62,16 +61,94 @@ https://docs.google.com/document/d/1B9S35aB3A0MxObnLSVdA7QrruzmPaArz_OkyyoquPr8/
 	- Participation: messages by author to group
 	- Replication: share of messages that were directly replied to
 
-**New Possibilities:**
+```New Possibilities:```
+```- gatekeeping```
+```- emotive language (maybe TextBlob or VADER?)/ aggresiveness```
+```- measure for shared vs. own content```
+```- ratios for how much content deals with each of the topics```
+```- (im)politeness, humor, indexicality, and multilingualism (https://journals.sagepub.com/doi/full/10.1177/21582440211047572) ```
 
-- gatekeeping
-- emotive language (maybe TextBlob or VADER?)
-- measure for shared vs. own content
-- ratios for how much content deals with each of the topics
-- (im)politeness, humor, indexicality, and multilingualism (https://journals.sagepub.com/doi/full/10.1177/21582440211047572)
+**(Supervised ML or Dictionary Based) Numeric and POS features**
+https://link-springer-com.ep.fjernadgang.kb.dk/article/10.1007/s11042-023-15216-0
+- e.g. positive words, negative words, nouns, adjectives etc
+https://ieeexplore-ieee-org.ep.fjernadgang.kb.dk/document/9940948
+- first person, second person pronouns, superlatives, swear words, sentiment & emotion score etc (dictionary based)
+- contextual features: number of replies
+https://www-sciencedirect-com.ep.fjernadgang.kb.dk/science/article/pii/S0360835222004697?via%3Dihub
+- number of special characters, upper & lowercase, long sentences
+- stylometric features: number of articles, determinant count, noun count, verb count, adverb count, number of syllables, number of words, no of total sentence, rate of the noun, adjective count, and rate of adverb
+
+_--> POS Tagging via TIGER CORPUS
+
+
+**Readability/ Complexity**
+https://www-sciencedirect-com.ep.fjernadgang.kb.dk/science/article/pii/S0360835222004697?via%3Dihub
+- different scores: Gunning Fog grade Index, Coleman Liau Index, Linsear Write, Dale-Chall Readability, Flesch Readability Index, Spache Readability Index, Automatic readability Index
+- based on stylometric features (see above)
+
+ _-->TextStat can compute Flesch Readability in German_ (https://formative.jmir.org/2022/8/e35563)
+ _--> https://huggingface.co/krupper/text-complexity-classification four complexity classes_
+  ~~--> https://klartext.uni-hohenheim.de/hix Online Tool for German text~~
+  _hugging face: BERT based https://huggingface.co/MiriUll/distilbert-german-text-complexity
+
+**Sentiment Analysis/ Political Polarity**
+https://link-springer-com.ep.fjernadgang.kb.dk/article/10.1007/s41060-023-00469-7
+- using SVM (needs labelled data)
+https://www-sciencedirect-com.ep.fjernadgang.kb.dk/science/article/pii/S0360835222004697?via%3Dihub
+- polarity: positive/ negative
+
+~~_GerVADER NOT an option --> BAD results;_~~
+_--> germansentiment looks promising https://huggingface.co/oliverguhr/german-sentiment-bert
+OR https://huggingface.co/aari1995/German_Sentiment?text=yayy+niemand+freut+sich_
+
+
+**lexical features**
+https://www-sciencedirect-com.ep.fjernadgang.kb.dk/science/article/pii/S0306457324000517?via%3Dihub
+- lexical density: higher density = more effective information conveyed --> done by counting + calculating ratio of content vs. function words (how??)
+- lexical sophistication: proportion of uncommon words in the text and the complexity of lexical representation --> Tool for the Automatic Analysis of Lexical Sophistication (TAALES) (english only)
+- syntactic complexity
+
+**Narrative Novelty vs. Continuity**
+https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0293508
+- cosine distance of vector representations of messages (or 'concepts' in messages)
+- novelty: avg distance to preceding messages
+- transience: avg distance to following messages
+- resonance = diff between novelty and transience
+- six categories based on these three scores:
+	- isolated
+	- continued
+	- emerging
+	- fading
+	- continued-emerging
+	- continued-fading
+- (findings show that channels usually have a lot of isolated messages)
+
+https://cris.vub.be/ws/portalfiles/portal/94099959/short5.pdf
+- keyness analysis to determine new emerging topics
+
+**~~Linguistic Inquiry Word Count (LIWC)**
+- ~~application~~
+- ~~gives ratios of word in corpus e.g. positive, negative, allure etc.~~
+- ~~hard to see what it can do~~
+
 
 to check:
-- Web of Science
-	- linguistic + specific conspiracy name
-- hugging face
-- GPT
+- [x] Web of Science
+- [ ] WOS: linguistic + specific conspiracy name
+- [x] websearch for German NLP tools
+- [x] hugging face
+- [x] GPT
+
+
+# Tuesday, 25/06/2024
+
+>[!TASKS]
+>- continuation of yesterday: research into linguistic features
+>- end of internship talk: Irene (migration)
+
+# Wednesday, 26/04/2024
+
+>[!TASKS]
+>- continuation: research into linguistic features
+>- Workshop: Deep Roots of Political and Economic Development
+>- Wednesday Talk: Telegram Data Collection Tool
