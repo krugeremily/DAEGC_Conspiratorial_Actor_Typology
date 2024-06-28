@@ -1,9 +1,11 @@
 #general
 csh_venv/
 data/
+utils/ClassifierBasedGermanTagger/
+
+#temp files
+*.DS_Store
+__pycache__
 
 # Obsidian
 Obsidian - CSH Internship/*.obsidian
-
-# data 
-data/
