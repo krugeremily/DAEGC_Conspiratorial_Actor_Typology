@@ -5,10 +5,16 @@ import sys
 import os
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 sys.path.append('../utils')
+
+import time
 import argparse
 import pandas as pd
 from utils.linguistic_features import remove_emojis, remove_tags, preprocess_text
+from tqdm import tqdm
 
+
+########## TIME ##########
+start_time = time.time()
 
 ########## SET PARAMETERS ##########
 parser = argparse.ArgumentParser()
@@ -59,12 +65,21 @@ messages['final_message'] = messages['message'].where(messages['message'].notnul
 messages['final_message_string'] = messages['message_string'].where(messages['message_string'] != 'nan', messages['fwd_message_string']).astype(str)
 
 #preprocess text
-messages['preprocessed_message'] = messages['final_message_string'].apply(preprocess_text).astype(str)
-
+preprocessed_messages = []
+for message in tqdm(messages['final_message_string'], desc = 'Preprocessing messages'):
+    message = preprocess_text(message)
+    preprocessed_messages.append(message)
+messages['preprocessed_message'] = preprocessed_messages
 
 #delete uneccessary columns
 messages = messages.drop(columns=['message', 'fwd_message', 'message_string', 'fwd_message_string'], axis=1)
 
 os.makedirs('../data/samples', exist_ok=True)
 messages.to_csv(f'../data/samples/messages_sample_{sample_size*2}.csv.gzip', compression='gzip')
-print('Sample created and saved.')
+print('')
+
+########## TIME ##########
+end_time = time.time()
+seconds = end_time - start_time
+minutes = seconds / 60
+print(f'Sample of {sample_size*2 }created and saved.Time taken: {minutes} minutes.')

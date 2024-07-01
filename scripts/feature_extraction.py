@@ -104,4 +104,4 @@ messages.to_csv(f'../data/results/messages_with_features_{sample_size}.csv.gzip'
 end_time = time.time()
 seconds = end_time - start_time
 minutes = seconds / 60
-print(f'Feature extraction done. Runtime: {seconds} seconds (corresponds to {minutes} minutes)')
+print(f'Feature extraction done. Runtime: {seconds} seconds (corresponds to {minutes} minutes) for sample of {sample_size}')

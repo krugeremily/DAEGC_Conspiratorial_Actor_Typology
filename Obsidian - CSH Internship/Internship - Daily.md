@@ -211,13 +211,6 @@ Accompanying Paper: https://aclanthology.org/2022.germeval-1.4.pdf
 - script available on git
 
 
-## Emoji Classifier
-
-- https://www-degruyter-com.ep.fjernadgang.kb.dk/document/doi/10.1515/ip-2023-5001/html paper indicates that emojis incongruent to message indicate irony/sarcasm
-
-- EmojiNet API usable to extract meaning of emojis --> calls time out
-- 
-
 # Friday, 28/06/2024
 
 >[!TASKS]
@@ -232,8 +225,8 @@ features relate to either message or fwd_message, depending on which of the two 
 
 | Feature           | Description                                                              |
 | ----------------- | ------------------------------------------------------------------------ |
-| sent_count        | num of sentences                                                         |
-| word_count        | num of words                                                             |
+| sent_count        | count of sentences                                                       |
+| word_count        | count of words                                                           |
 | avg_sent_length   | average sentence length                                                  |
 | avg_word_length   | average word length                                                      |
 | exclamation_count | count of exclamations, multiple consecutive ! counted as one exclamation |
@@ -266,7 +259,16 @@ done with Spacy instead of TIGER Corpus, cause Spacy is trained on TIGER Corpus 
 >		- [x] improve text cleaning
 >	- [ ] look into outliers
 >- [x] running task: look into LIWC
->- [ ] running task: look into emoji classifier
+>- [x] running task: look into emoji classifier
 >- [ ] running task: code for language complexity model
 
 
+## Emoji Classifier
+
+- https://www-degruyter-com.ep.fjernadgang.kb.dk/document/doi/10.1515/ip-2023-5001/html paper indicates that emojis incongruent to message indicate irony/sarcasm
+
+- EmojiNet API usable to extract meaning of emojis --> calls time out
+- https://www.emojis.net/de/emoji --> crude scraping alternative
+
+https://www.kaggle.com/datasets/rtatman/emojinet
+https://www.kaggle.com/datasets/thomasseleck/emoji-sentiment-data
