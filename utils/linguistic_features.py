@@ -50,13 +50,22 @@ def count_emojis(text):
                       ']+', re.UNICODE)
     return len(re.findall(emoj, text))
 
+################## Removing Links, URLs and other tags ##################
 
+def remove_tags(text):
+    #remove everything within a tag
+    a_tag_pattern = r'<a href=".*?">.*?</a>'
+    custom_tag_pattern = r'<\w+>|<\/\w+>'
+    cleaned_text = re.sub(a_tag_pattern, '', text)
+    cleaned_text = re.sub(custom_tag_pattern, '', cleaned_text)
+    return cleaned_text
 
 ################## PREPROCESSING & POS TAGGING WITH SPACY ##################
+
 nlp = spacy.load('de_core_news_sm', disable=['parser', 'ner'])
 
 def preprocess_text(text):
-    global nlp
+    text = text.lower()
     doc = nlp(text)
     tokens = [token.lemma_ for token in doc if not token.is_stop and not token.is_punct]
     message = ' '.join(tokens)

@@ -219,9 +219,10 @@ Accompanying Paper: https://aclanthology.org/2022.germeval-1.4.pdf
 - 
 
 # Friday, 28/06/2024
+
 >[!TASKS]
 >- [x] Workshop: Deep Roots of Political and Economic Development
-> - [ ] running task: write/test code to enrich dataset with 
+> - [x] running task: write/test code to enrich dataset with 
 > 	- [x] count-based features
 > 	- [x] POS tagging
 > 	- [x] Flesch Reading Ease
@@ -251,7 +252,21 @@ done with Spacy instead of TIGER Corpus, cause Spacy is trained on TIGER Corpus 
 
 ## Flesch Reading Ease
 
-| Feature             | Description               |
-| ------------------- | ------------------------- |
-| flesch_reading_ease | Flesch Reading Ease Score |
+| Feature                   | Description                                                                                                |     |
+| ------------------------- | ---------------------------------------------------------------------------------------------------------- | --- |
+| flesch_reading_ease       | Flesch Reading Ease Score                                                                                  |     |
+| flesch_reading_ease_class | Classified Feading Score (6 classes from 'very confusing' to very easy' + 'unclassified' for < 0 or > 100) |     |
+
+# Monday, 01/07/2024
+
+>[!TASKS]
+>- [ ] refine code from Friday
+>	- [x] split sample creation and feature extraction into two scripts
+>	- [x] look into Flesch scores
+>		- [x] improve text cleaning
+>	- [ ] look into outliers
+>- [x] running task: look into LIWC
+>- [ ] running task: look into emoji classifier
+>- [ ] running task: code for language complexity model
+
 
