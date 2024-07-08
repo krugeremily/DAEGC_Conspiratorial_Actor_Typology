@@ -1,0 +1,28 @@
+https://www.tecmint.com/use-linux-awk-command-to-filter-text-string-in-files/
+
+Regular expressions are made of:
+
+Ordinary characters such as space, underscore(_), A-Z, a-z, 0-9.
+Meta characters that are expanded to ordinary characters, they include:
+        (.) it matches any single character except a newline.
+        (*) it matches zero or more existences of the immediate character preceding it.
+        [ character(s) ] it matches any one of the characters specified in character(s), one can also use a hyphen (-) to mean a range of characters such as [a-f], [1-5], and so on.
+        ^ it matches the beginning of a line in a file.
+        $ matches the end of line in a file.
+        \ it is an escape character.
+        
+Specifying Characters in a Range
+
+Understand characters with awk:
+
+    [0-9] means a single number
+    [a-z] means match a single lower case letter
+    [A-Z] means match a single upper case letter
+    [a-zA-Z] means match a single letter
+    [a-zA-Z 0-9] means match a single letter or number
+    
+#(["'])(?:(?=(\\?))\2.)*?\1
+    Match something between quotation marks: (["'])(?:(?=(\\?))\2.)*?\1
+
+
+
