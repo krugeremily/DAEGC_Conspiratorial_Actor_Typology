@@ -60,13 +60,19 @@ BEGIN {
 
     # check if first record of current file to print header
     if (FNR == 1) {
-        header = "ID"
+        header = "UID_key";
+
+        # Construct header with LIWC categories
         for (catnum in categories) {
             if (categories[catnum] in target_categories) {
-                header = header OFS "liwc_" categories[catnum] # construct header with liwc_ prefix
+                header = header OFS "liwc_" categories[catnum];
             }
         }
-        print header # print the header
+
+        # Add a comma at the end of the header
+        header = header OFS;
+
+        print header;  # print the header
     }
 
     # initialize hit counts for all target categories to 0
