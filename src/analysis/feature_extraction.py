@@ -4,14 +4,14 @@
 import sys
 import os
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-sys.path.append('../utils')
+sys.path.append('../functions')
 
 import time
 import argparse
 import pandas as pd
 import regex as re
 import numpy as np
-from utils.linguistic_features import count_emojis, count_pos_tags
+from functions.linguistic_features import count_emojis, count_pos_tags
 import textstat
 from tqdm import tqdm
 
@@ -27,7 +27,7 @@ sample_size = args.sample #sample size of loaded dataset
 
 ########## LOAD DATASET ##########
 
-messages = pd.read_csv(f'../data/samples/messages_sample_{sample_size}.csv.gzip', compression='gzip').drop(columns=['Unnamed: 0'], axis=1)
+messages = pd.read_csv(f'../../data/samples/messages_sample_{sample_size}.csv.gzip', compression='gzip').drop(columns=['Unnamed: 0'], axis=1)
 messages['final_message_string'] = messages['final_message_string'].astype(str)
 messages['preprocessed_message'] = messages['preprocessed_message'].astype(str)
 
@@ -97,8 +97,8 @@ messages['flesch_reading_ease_class'] = flesch_classes
 
 print('Flesch Reading Ease score extracted.')
 
-os.makedirs('../data/results', exist_ok=True)
-messages.to_csv(f'../data/results/messages_with_features_{sample_size}.csv.gzip', compression='gzip')
+os.makedirs('../../results', exist_ok=True)
+messages.to_csv(f'../../results/messages_with_features_{sample_size}.csv.gzip', compression='gzip')
 
 ########## TIME ##########
 end_time = time.time()

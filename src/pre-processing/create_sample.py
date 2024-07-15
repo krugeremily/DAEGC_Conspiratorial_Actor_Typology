@@ -4,12 +4,12 @@
 import sys
 import os
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-sys.path.append('../utils')
+sys.path.append('../functions')
 
 import time
 import argparse
 import pandas as pd
-from utils.linguistic_features import remove_emojis, remove_tags, preprocess_text
+from functions.linguistic_features import remove_emojis, remove_tags, preprocess_text
 from tqdm import tqdm
 
 
@@ -28,8 +28,8 @@ random_state = args.seed
 ########## LOAD AND PREPARE DATASET ##########
 
 #load two datasets, drop unnecessary columns and add column to indicate group or channel
-groups = pd.read_csv('../data/selected_groups_with_transcriptions.csv.gzip', compression='gzip').drop(columns=['Unnamed: 0'], axis=1)
-channels = pd.read_csv('../data/channel_subsample.csv.gzip', compression='gzip').drop(columns=['Unnamed: 0', 'Unnamed: 0.1'], axis=1)
+groups = pd.read_csv('../../data/selected_groups_with_transcriptions.csv.gzip', compression='gzip').drop(columns=['Unnamed: 0'], axis=1)
+channels = pd.read_csv('../../data/channel_subsample.csv.gzip', compression='gzip').drop(columns=['Unnamed: 0', 'Unnamed: 0.1'], axis=1)
 
 
 groups['group_or_channel'] = 'group'
@@ -74,8 +74,8 @@ messages['preprocessed_message'] = preprocessed_messages
 #delete uneccessary columns
 messages = messages.drop(columns=['message', 'fwd_message', 'message_string', 'fwd_message_string'], axis=1)
 
-os.makedirs('../data/samples', exist_ok=True)
-messages.to_csv(f'../data/samples/messages_sample_{sample_size*2}.csv.gzip', compression='gzip')
+os.makedirs('../../data/samples', exist_ok=True)
+messages.to_csv(f'../../data/samples/messages_sample_{sample_size*2}.csv.gzip', compression='gzip')
 print('')
 
 ########## TIME ##########

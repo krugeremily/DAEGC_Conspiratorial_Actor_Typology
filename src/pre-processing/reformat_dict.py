@@ -5,7 +5,7 @@ import pandas as pd
 
 ########## LOAD ORIGINAL LIWC DICT ##########
 
-file_path = '../data/LIWC2007_German.dic'
+file_path = '../../data/LIWC2007_German.dic'
 #the first 70 rows should not be read as they contain metadata
 skiprows = 70
 
@@ -109,4 +109,4 @@ df['cat_name'] = df['categories'].map(liwc_categories)
 df = df[['word', 'cat_name', 'categories']]
 
 #save reformattet dict
-df.to_csv('../data/liwc_german_2007.txt', sep='\t', index=False, header=False)
+df.to_csv('../../data/liwc_german_2007.txt', sep='\t', index=False, header=False)
