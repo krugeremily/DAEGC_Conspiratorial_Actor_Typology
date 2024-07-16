@@ -19,13 +19,11 @@ start_time = time.time()
 
 ########## SET PARAMETERS ##########
 parser = argparse.ArgumentParser()
-parser.add_argument('--sample', type=bool, default=True , help = 'Should sample be taken (TRUE) or full dataset (FALSE)')
-parser.add_argument('--samplesize', type=int, default=100, help = 'Sample taken from EACH of the two datasets')
-parser.add_argument('--seed', type=int, default=42)
+parser.add_argument('--samplesize', type=str, default='100', help = 'Total sample size combined from two datasets as int or "full"')
+parser.add_argument('--seed', type=int, default=42, help='Random seed for sampling')
 args = parser.parse_args()
 
-take_sample = args.sample
-sample_size = args.samplesize #how big of a sample to take from each dataset
+sample_size = args.samplesize
 random_state = args.seed
 
 ########## LOAD AND PREPARE DATASET ##########
@@ -41,10 +39,11 @@ channels['group_or_channel'] = 'channel'
 
 
 #if desired, take random sample of both df where either message or fwd_message (or transcribed_messgae if group) contains data and combine
-if take_sample:
+if sample_size != 'full':
     print('Taking samples.')
-    sample_groups = groups[groups['message'].notnull() | groups['fwd_message'].notnull() | groups['transcribed_message'].notnull()].sample(n=sample_size, random_state=random_state)
-    sample_channels = channels[channels['message'].notnull() | channels['fwd_message'].notnull()].sample(n=sample_size, random_state=random_state)
+    sample_each = int(sample_size) / 2
+    sample_groups = groups[groups['message'].notnull() | groups['fwd_message'].notnull() | groups['transcribed_message'].notnull()].sample(n=sample_each, random_state=random_state)
+    sample_channels = channels[channels['message'].notnull() | channels['fwd_message'].notnull()].sample(n=sample_each, random_state=random_state)
     combined = pd.concat([sample_groups, sample_channels], ignore_index=True, axis=0)
 else:
     combined = pd.concat([groups, channels], ignore_index=True, axis=0)
@@ -90,11 +89,11 @@ messages['preprocessed_message'] = preprocessed_messages
 messages = messages.drop(columns=['message', 'fwd_message', 'message_string', 'fwd_message_string', 'transcribed_message'], axis=1)
 
 os.makedirs('../../data/samples', exist_ok=True)
-messages.to_csv(f'../../data/samples/messages_sample_{sample_size*2}.csv.gzip', compression='gzip')
+messages.to_csv(f'../../data/samples/messages_sample_{sample_size}.csv.gzip', compression='gzip')
 print('')
 
 ########## TIME ##########
 end_time = time.time()
 seconds = end_time - start_time
 minutes = seconds / 60
-print(f'Sample of {sample_size*2 } created and saved. Time taken: {minutes} minutes.')
+print(f'Sample of {sample_size} created and saved. Time taken: {minutes} minutes.')

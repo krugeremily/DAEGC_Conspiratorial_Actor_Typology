@@ -16,6 +16,7 @@ BEGIN {
     # define categories to classify
     target_categories["Motion"] = 1
     target_categories["Present"] = 1
+    
 }
 #################### END OF BEGIN BLOCK ####################
 
