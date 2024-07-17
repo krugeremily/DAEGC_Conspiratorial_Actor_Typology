@@ -20,7 +20,7 @@ start_time = time.time()
 
 ########## SET PARAMETERS ##########
 parser = argparse.ArgumentParser()
-parser.add_argument('--samplesize', type=int, help = 'Total sample size of prepared dataset (as in filename)')
+parser.add_argument('--samplesize', type=str, default='100', help = 'Total sample size combined from two datasets as int or "full"')
 args = parser.parse_args()
 
 sample_size = args.samplesize #sample size of loaded dataset

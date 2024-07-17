@@ -7,7 +7,7 @@ import argparse
 
 ########## SET PARAMETERS ##########
 parser = argparse.ArgumentParser()
-parser.add_argument('--samplesize', type=int, default=100, help = 'Total samplesize')
+parser.add_argument('--samplesize', type=str, default='100', help = 'Total sample size combined from two datasets as int or "full"')
 args = parser.parse_args()
 
 sample_size = args.samplesize 

@@ -13,30 +13,30 @@ start_time = time.time()
 
 ########## SET PARAMETERS ##########
 parser = argparse.ArgumentParser()
-parser.add_argument('--sample', type=bool, default=True , help = 'Should sample be taken (TRUE) or full dataset (FALSE)')
-parser.add_argument('--samplesize', type=int, default=200, help = 'Total sample size combined from two datasets')
+parser.add_argument('--samplesize', type=str, default='100', help = 'Total sample size combined from two datasets as int or "full"')
 
 args = parser.parse_args()
 
-take_sample = args.sample
 sample_size = args.samplesize
 
 ########## RUN SCRIPTS ##########
 
 #create sample
 os.chdir('pre-processing')
-subprocess.run(f'python create_sample.py --sample TRUE --samplesize {sample_size}', shell=True)
+subprocess.run(f'python create_sample.py --samplesize {sample_size}', shell=True)
 
 #convert csv to txt
 subprocess.run(f'python pd_to_txt.py --samplesize {sample_size}', shell=True)
 
-#extract count-based features
 os.chdir('../analysis')
-subprocess.run(f'python feature_extraction.py --samplesize {sample_size}', shell=True)
+# #extract count-based features
+# subprocess.run(f'python feature_extraction.py --samplesize {sample_size}', shell=True)
 
 #run gawk script to for liwc classification
-subprocess.run(f'gawk -f liwc_category_ratios.awk ../../data/liwc_german_2007.txt ../../data/samples/messages_sample_{sample_size}.txt > ../../results/liwc_ratios_{sample_size}.csv', shell=True)
-print('LIWC classification done.')
+awk_start = time.time()
+subprocess.run(f'gawk -f liwc_category_ratios.awk ../../data/liwc_german_2007.txt ../../data/samples/messages_sample_{sample_size}.txt | gzip > ../../results/liwc_ratios_{sample_size}.csv.gzip', shell=True)
+awk_end = time.time()
+print(f'LIWC classification done in {awk_end - awk_start} seconds.')
 ########## MERGE RESULTS ##########
 
 os.chdir('..')

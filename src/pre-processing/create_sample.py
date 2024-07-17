@@ -49,7 +49,7 @@ else:
     combined = pd.concat([groups, channels], ignore_index=True, axis=0)
 
 #keep only necessary columns
-messages = combined[['UID_key', 'message', 'fwd_message', 'transcribed_message', 'group_or_channel']]
+messages = combined[['UID_key','author', 'message', 'fwd_message', 'transcribed_message', 'group_or_channel']]
 
 #remove emojis and links
 print('Cleaning messages.')
@@ -68,29 +68,30 @@ messages['fwd_message_string'] = cleaned_fwd_messages
 messages['message_string'] = messages['message_string'].astype(str)
 messages['fwd_message_string'] = messages['fwd_message_string'].astype(str)
 
+
+print('Combining the three message columns into one.')
 #if message, take message else take fwd_message else take transcribed message
-messages['final_message'] = np.where(messages['message'].notnull(), messages['message'],
-                                    np.where(messages['fwd_message'].notnull(), messages['fwd_message'],
-                                             messages['transcribed_message'])).astype(str)
-messages['final_message_string'] = np.where(messages['message_string'] != 'nan', messages['message_string'],
-                                    np.where(messages['fwd_message_string'] != 'nan', messages['fwd_message_string'],
-                                             messages['transcribed_message'])).astype(str)
+messages['final_message'] = messages['message'].combine_first(messages['fwd_message']).combine_first(messages['transcribed_message']).astype(str)
+# Compute the 'final_message_string' column
+messages['final_message_string'] = messages['message_string'].replace('nan', np.nan).combine_first(
+                                   messages['fwd_message_string'].replace('nan', np.nan)).combine_first(
+                                   messages['transcribed_message'].replace('nan', np.nan)).astype(str)
+
 #in final_message_string, replace multiple whitespaces with one
 messages['final_message_string'] = messages['final_message_string'].str.replace(r'\s+', ' ', regex=True)
 
-#preprocess text
-preprocessed_messages = []
-for message in tqdm(messages['final_message_string'], desc = 'Preprocessing messages'):
-    message = preprocess_text(message)
-    preprocessed_messages.append(message)
-messages['preprocessed_message'] = preprocessed_messages
+# #preprocess text
+# preprocessed_messages = []
+# for message in tqdm(messages['final_message_string'], desc = 'Preprocessing messages'):
+#     message = preprocess_text(message)
+#     preprocessed_messages.append(message)
+# messages['preprocessed_message'] = preprocessed_messages
 
 #delete uneccessary columns
 messages = messages.drop(columns=['message', 'fwd_message', 'message_string', 'fwd_message_string', 'transcribed_message'], axis=1)
-
+print('Saving dataset.')
 os.makedirs('../../data/samples', exist_ok=True)
 messages.to_csv(f'../../data/samples/messages_sample_{sample_size}.csv.gzip', compression='gzip')
-print('')
 
 ########## TIME ##########
 end_time = time.time()
