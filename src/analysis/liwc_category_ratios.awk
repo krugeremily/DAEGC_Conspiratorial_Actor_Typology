@@ -14,72 +14,72 @@ BEGIN {
     minchar = 100
     
     # define categories to classify
-    target_categories["Achieve"]=1
-    target_categories["Affect"]=1
-    target_categories["Anger"]=1
-    target_categories["Anx"]=1
-    target_categories["Article"]=1
-    target_categories["Assent"]=1
-    target_categories["Body"]=1
-    target_categories["Cause"]=1
-    target_categories["Certain"]=1
-    target_categories["Cogmech"]=1
-    target_categories["Comm"]=1
-    target_categories["Death"]=1
-    target_categories["Discrep"]=1
-    target_categories["Down"]=1
-    target_categories["Eating"]=1
-    target_categories["Excl"]=1
-    target_categories["Family"]=1
-    target_categories["Feel"]=1
-    target_categories["Fillers"]=1
-    target_categories["Friends"]=1
-    target_categories["Future"]=1
-    target_categories["Groom"]=1
-    target_categories["Hear"]=1
-    target_categories["Home"]=1
-    target_categories["Humans"]=1
+    # target_categories["Achieve"]=1
+    # target_categories["Affect"]=1
+    # target_categories["Anger"]=1
+    # target_categories["Anx"]=1
+    # target_categories["Article"]=1
+    # target_categories["Assent"]=1
+    # target_categories["Body"]=1
+    # target_categories["Cause"]=1
+    # target_categories["Certain"]=1
+    # target_categories["Cogmech"]=1
+    # target_categories["Comm"]=1
+    # target_categories["Death"]=1
+    # target_categories["Discrep"]=1
+    # target_categories["Down"]=1
+    # target_categories["Eating"]=1
+    # target_categories["Excl"]=1
+    # target_categories["Family"]=1
+    # target_categories["Feel"]=1
+    # target_categories["Fillers"]=1
+    # target_categories["Friends"]=1
+    # target_categories["Future"]=1
+    # target_categories["Groom"]=1
+    # target_categories["Hear"]=1
+    # target_categories["Home"]=1
+    # target_categories["Humans"]=1
     target_categories["I"]=1
-    target_categories["Incl"]=1
-    target_categories["Inhib"]=1
-    target_categories["Insight"]=1
-    target_categories["Job"]=1
-    target_categories["Leisure"]=1
-    target_categories["Metaph"]=1
-    target_categories["Money"]=1
-    target_categories["Motion"]=1
-    target_categories["Music"]=1
-    target_categories["Negate"]=1
+    # target_categories["Incl"]=1
+    # target_categories["Inhib"]=1
+    # target_categories["Insight"]=1
+    # target_categories["Job"]=1
+    # target_categories["Leisure"]=1
+    # target_categories["Metaph"]=1
+    # target_categories["Money"]=1
+    # target_categories["Motion"]=1
+    # target_categories["Music"]=1
+    # target_categories["Negate"]=1
     target_categories["Negemo"]=1
-    target_categories["Nonfl"]=1
-    target_categories["Number"]=1
-    target_categories["Occup"]=1
-    target_categories["Optim"]=1
+    # target_categories["Nonfl"]=1
+    # target_categories["Number"]=1
+    # target_categories["Occup"]=1
+    # target_categories["Optim"]=1
     target_categories["Other"]=1
-    target_categories["Othref"]=1
-    target_categories["Past"]=1
-    target_categories["Physcal"]=1
+    # target_categories["Othref"]=1
+    # target_categories["Past"]=1
+    # target_categories["Physcal"]=1
     target_categories["Posemo"]=1
-    target_categories["Posfeel"]=1
-    target_categories["Preps"]=1
-    target_categories["Present"]=1
-    target_categories["Pronoun"]=1
-    target_categories["Relig"]=1
-    target_categories["Sad"]=1
-    target_categories["School"]=1
-    target_categories["See"]=1
-    target_categories["Self"]=1
-    target_categories["Senses"]=1
-    target_categories["Sexual"]=1
-    target_categories["Sleep"]=1
-    target_categories["Social"]=1
-    target_categories["Space"]=1
-    target_categories["Sports"]=1
-    target_categories["Swear"]=1
-    target_categories["TV"]=1
-    target_categories["Tentat"]=1
-    target_categories["Time"]=1
-    target_categories["Up"]=1
+    # target_categories["Posfeel"]=1
+    # target_categories["Preps"]=1
+    # target_categories["Present"]=1
+    # target_categories["Pronoun"]=1
+    # target_categories["Relig"]=1
+    # target_categories["Sad"]=1
+    # target_categories["School"]=1
+    # target_categories["See"]=1
+    # target_categories["Self"]=1
+    # target_categories["Senses"]=1
+    # target_categories["Sexual"]=1
+    # target_categories["Sleep"]=1
+    # target_categories["Social"]=1
+    # target_categories["Space"]=1
+    # target_categories["Sports"]=1
+    # target_categories["Swear"]=1
+    # target_categories["TV"]=1
+    # target_categories["Tentat"]=1
+    # target_categories["Time"]=1
+    # target_categories["Up"]=1
     target_categories["We"]=1
     target_categories["You"]=1  
 }
@@ -176,33 +176,33 @@ BEGIN {
             }
         }
     }
-### USE THIS PART FOR RATIOS ###
-#     # prepare the result string with counts normalized by the number of tokens
-#     result = id OFS
-#     for (catnum in categories) {
-#         if (categories[catnum] in target_categories) {
-#             if (NF == 1) { # handle case where there are no message tokens
-#                 result = result "0" OFS
-#             } else {
-#                 result = result (sum_hits[catnum] / (NF - 1)) OFS # normalize by the number of message tokens
-#             }
-#         }
-#     }
-#     print result # print the result
-# }
-
-### USE THIS PART FOR TOTAL COUNTS ###
-    # prepare the result string with total counts
+## USE THIS PART FOR RATIOS ###
+    # prepare the result string with counts normalized by the number of tokens
     result = id OFS
     for (catnum in categories) {
         if (categories[catnum] in target_categories) {
             if (NF == 1) { # handle case where there are no message tokens
                 result = result "0" OFS
             } else {
-                result = result sum_hits[catnum] OFS # use the total count
+                result = result (sum_hits[catnum] / (NF - 1)) OFS # normalize by the number of message tokens
             }
         }
     }
     print result # print the result
 }
+
+# ### USE THIS PART FOR TOTAL COUNTS ###
+#     # prepare the result string with total counts
+#     result = id OFS
+#     for (catnum in categories) {
+#         if (categories[catnum] in target_categories) {
+#             if (NF == 1) { # handle case where there are no message tokens
+#                 result = result "0" OFS
+#             } else {
+#                 result = result sum_hits[catnum] OFS # use the total count
+#             }
+#         }
+#     }
+#     print result # print the result
+# }
 #################### END OF MAIN BLOCK ####################

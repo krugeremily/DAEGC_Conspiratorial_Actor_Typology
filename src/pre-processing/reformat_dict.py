@@ -107,6 +107,7 @@ liwc_categories = {
 #map category names
 df['cat_name'] = df['categories'].map(liwc_categories)
 df = df[['word', 'cat_name', 'categories']]
+df.sort_values(by=['cat_name', 'word'], inplace=True, ignore_index=True)
 
 #save reformattet dict
 df.to_csv('../../data/liwc_german_2007.txt', sep='\t', index=False, header=False)
