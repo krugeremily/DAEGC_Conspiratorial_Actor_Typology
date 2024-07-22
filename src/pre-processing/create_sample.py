@@ -41,7 +41,7 @@ channels['group_or_channel'] = 'channel'
 #if desired, take random sample of both df where either message or fwd_message (or transcribed_messgae if group) contains data and combine
 if sample_size != 'full':
     print('Taking samples.')
-    sample_each = int(sample_size) / 2
+    sample_each = int(int(sample_size) / 2)
     sample_groups = groups[groups['message'].notnull() | groups['fwd_message'].notnull() | groups['transcribed_message'].notnull()].sample(n=sample_each, random_state=random_state)
     sample_channels = channels[channels['message'].notnull() | channels['fwd_message'].notnull()].sample(n=sample_each, random_state=random_state)
     combined = pd.concat([sample_groups, sample_channels], ignore_index=True, axis=0)

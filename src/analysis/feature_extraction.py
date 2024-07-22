@@ -101,13 +101,16 @@ print('Flesch Reading Ease score extracted.')
 
 ########## SENTIMENT ##########
 
-model = SentimentModel()
-
-
-
-
+### currently commented out cause code leads to system crash
+# print('Predicting sentiment...')
+# model = SentimentModel()
+# messages['sentiment'], messages['probs'] = model.predict_sentiment(messages['final_message_string'], output_probabilities=True)
+# messages[['positive_prob', 'negative_prob', 'neutral_prob']] = pd.DataFrame(messages['probs'].tolist(), index=messages.index).applymap(lambda x: x[1])
+# messages = messages.drop( 'probs', axis=1)
+# print('Sentiment predicted.')
 
 ########## SAVING REULTS ##########
+print('Saving results...')
 os.makedirs('../../results', exist_ok=True)
 messages.to_csv(f'../../results/messages_with_features_{sample_size}.csv.gzip', compression='gzip')
 

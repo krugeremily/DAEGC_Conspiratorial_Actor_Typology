@@ -37,6 +37,8 @@ awk_start = time.time()
 subprocess.run(f'gawk -f liwc_category_ratios.awk ../../data/liwc_german_2007.txt ../../data/samples/messages_sample_{sample_size}.txt | gzip > ../../results/liwc_ratios_{sample_size}.csv.gzip', shell=True)
 awk_end = time.time()
 print(f'LIWC classification done in {awk_end - awk_start} seconds.')
+
+
 ########## MERGE RESULTS ##########
 
 os.chdir('..')
