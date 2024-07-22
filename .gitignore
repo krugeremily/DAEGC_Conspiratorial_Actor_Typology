@@ -6,6 +6,3 @@ utils/ClassifierBasedGermanTagger/
 #temp files
 *.DS_Store
 __pycache__
-
-# Obsidian
-Obsidian - CSH Internship/*.obsidian

@@ -9,20 +9,10 @@ matplotlib==3.8.1
 seaborn==0.13.1
 
 #nlp
-emoji==2.12.1
 spacy==3.7.4
 textstat==0.7.3
-
-
-######## still testing if needed ########
 transformers==4.41.2
-torch==2.3.1
 germansentiment==1.1.0
-sentencepiece==0.2.0 #necessary for roberta sentiment model
-protobuf== 5.27.2 #necessary for roberta sentiment model
-networkx == 3.3
-
-#nlp
 nltk==3.8.1
 scikit-learn==1.5.0
 

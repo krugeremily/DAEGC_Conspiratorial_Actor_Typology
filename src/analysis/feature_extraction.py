@@ -8,12 +8,14 @@ sys.path.append('../functions')
 
 import time
 import argparse
+from tqdm import tqdm
+
 import pandas as pd
 import regex as re
 import numpy as np
 from functions.linguistic_features import count_emojis, count_pos_tags
 import textstat
-from tqdm import tqdm
+from germansentiment import SentimentModel
 
 ########## TIME ##########
 start_time = time.time()
@@ -97,6 +99,15 @@ messages['flesch_reading_ease_class'] = flesch_classes
 
 print('Flesch Reading Ease score extracted.')
 
+########## SENTIMENT ##########
+
+model = SentimentModel()
+
+
+
+
+
+########## SAVING REULTS ##########
 os.makedirs('../../results', exist_ok=True)
 messages.to_csv(f'../../results/messages_with_features_{sample_size}.csv.gzip', compression='gzip')
 
