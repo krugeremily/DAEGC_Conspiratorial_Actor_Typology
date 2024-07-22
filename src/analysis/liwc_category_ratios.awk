@@ -50,7 +50,7 @@ BEGIN {
     # target_categories["Motion"]=1
     # target_categories["Music"]=1
     # target_categories["Negate"]=1
-    target_categories["Negemo"]=1
+    # target_categories["Negemo"]=1
     # target_categories["Nonfl"]=1
     # target_categories["Number"]=1
     # target_categories["Occup"]=1
@@ -59,7 +59,7 @@ BEGIN {
     # target_categories["Othref"]=1
     # target_categories["Past"]=1
     # target_categories["Physcal"]=1
-    target_categories["Posemo"]=1
+    # target_categories["Posemo"]=1
     # target_categories["Posfeel"]=1
     # target_categories["Preps"]=1
     # target_categories["Present"]=1
