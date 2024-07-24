@@ -15,7 +15,7 @@ import regex as re
 import numpy as np
 from functions.linguistic_features import count_emojis, count_pos_tags
 import textstat
-from germansentiment import SentimentModel
+from transformers import AutoTokenizer, pipeline
 
 ########## TIME ##########
 start_time = time.time()
@@ -31,9 +31,9 @@ sample_size = args.samplesize #sample size of loaded dataset
 
 messages = pd.read_csv(f'../../data/samples/messages_sample_{sample_size}.csv.gzip', compression='gzip').drop(columns=['Unnamed: 0'], axis=1)
 messages['final_message_string'] = messages['final_message_string'].astype(str)
-messages['preprocessed_message'] = messages['preprocessed_message'].astype(str)
+#messages['preprocessed_message'] = messages['preprocessed_message'].astype(str)
 
-########## SIMPLE COUNT BASED FEATURES ##########
+########## COUNT BASED FEATURES ##########
 
 #num sentences
 messages['sent_count'] = messages['final_message_string'].apply(lambda x: len(re.split(r'[.!?]+', x)) if x != '' else 0)
@@ -99,15 +99,48 @@ messages['flesch_reading_ease_class'] = flesch_classes
 
 print('Flesch Reading Ease score extracted.')
 
-########## SENTIMENT ##########
+########## SENTIMENT ANALYSIS ##########
 
-### currently commented out cause code leads to system crash
-# print('Predicting sentiment...')
-# model = SentimentModel()
-# messages['sentiment'], messages['probs'] = model.predict_sentiment(messages['final_message_string'], output_probabilities=True)
-# messages[['positive_prob', 'negative_prob', 'neutral_prob']] = pd.DataFrame(messages['probs'].tolist(), index=messages.index).applymap(lambda x: x[1])
-# messages = messages.drop( 'probs', axis=1)
-# print('Sentiment predicted.')
+#load tokenizer and sentiment model
+print('Loading sentiment model...')
+sentiment_model = pipeline(model='aari1995/German_Sentiment')
+tokenizer = AutoTokenizer.from_pretrained('aari1995/German_Sentiment')  
+
+pos_sent = []
+neg_sent = []
+neutral_sent = []
+
+for message in tqdm(messages['final_message_string'], desc = 'Extracting Sentiment'):
+    #if message is empty, don't calculate sentiment
+    if message == '' or message == 'nan':
+        pos_sent.append(np.nan)
+        neg_sent.append(np.nan)
+        neutral_sent.append(np.nan)
+    else:
+        #truncate message to max length model can handle
+        result = sentiment_model(message[:512])
+        sent = (result[0]['label'])
+        if sent == 'positive':
+            pos_sent.append(1)
+            neg_sent.append(0)
+            neutral_sent.append(0)
+        elif sent == 'negative':
+            pos_sent.append(0)
+            neg_sent.append(1)
+            neutral_sent.append(0)
+        elif sent == 'neutral':
+            pos_sent.append(0)
+            neg_sent.append(0)
+            neutral_sent.append(1)
+        else:
+            pos_sent.append(np.nan)
+            neg_sent.append(np.nan)
+            neutral_sent.append(np.nan)
+
+messages['positive_sentiment'] = pos_sent
+messages['negative_sentiment'] = neg_sent
+messages['neutral_sentiment'] = neutral_sent
+print('Sentiment extracted.')
 
 ########## SAVING REULTS ##########
 print('Saving results...')

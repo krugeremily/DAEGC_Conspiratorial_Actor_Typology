@@ -6,3 +6,4 @@
 
 **To Do:**
 - write SETUP file that creates venv, installs requirements and loads spacy?
+- cite Max properly

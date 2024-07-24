@@ -15,7 +15,7 @@ BEGIN {
     
     # define categories to classify
     # target_categories["Achieve"]=1
-    # target_categories["Affect"]=1
+    target_categories["Affect"]=1
     # target_categories["Anger"]=1
     # target_categories["Anx"]=1
     # target_categories["Article"]=1

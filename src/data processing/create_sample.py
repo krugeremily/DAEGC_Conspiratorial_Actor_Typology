@@ -42,14 +42,22 @@ channels['group_or_channel'] = 'channel'
 if sample_size != 'full':
     print('Taking samples.')
     sample_each = int(int(sample_size) / 2)
-    sample_groups = groups[groups['message'].notnull() | groups['fwd_message'].notnull() | groups['transcribed_message'].notnull()].sample(n=sample_each, random_state=random_state)
-    sample_channels = channels[channels['message'].notnull() | channels['fwd_message'].notnull()].sample(n=sample_each, random_state=random_state)
+    sample_groups = groups[groups['message'].notnull() | groups['transcribed_message'].notnull()].sample(n=sample_each, random_state=random_state)
+    sample_channels = channels[channels['message'].notnull()].sample(n=sample_each, random_state=random_state)
     combined = pd.concat([sample_groups, sample_channels], ignore_index=True, axis=0)
 else:
     combined = pd.concat([groups, channels], ignore_index=True, axis=0)
 
+#make date column for aggregation
+combined['date'] = str(combined['year']) + '-' + str(combined['month'])
+
+#for counting own and transcribed messages
+combined['own_message'] = [1 if x else 0 for x in combined['message'].notnull()]
+combined['forwarded_message'] = [1 if x else 0 for x in combined['fwd_message'].notnull()]
+
 #keep only necessary columns
-messages = combined[['UID_key','author', 'message', 'fwd_message', 'transcribed_message', 'group_or_channel']]
+messages = combined[['UID_key','author', 'message', 'date', 'transcribed_message', 'group_or_channel', 'own_message', 'forwarded_message']]
+
 
 #remove emojis and links
 print('Cleaning messages.')
@@ -58,23 +66,16 @@ for message in messages['message'].astype(str):
     message = remove_tags(message)
     cleaned_messages.append(remove_emojis(message))
 
-cleaned_fwd_messages = []
-for message in messages['fwd_message'].astype(str):
-    message = remove_tags(message)
-    cleaned_fwd_messages.append(remove_emojis(message))
 
 messages['message_string'] = cleaned_messages
-messages['fwd_message_string'] = cleaned_fwd_messages
 messages['message_string'] = messages['message_string'].astype(str)
-messages['fwd_message_string'] = messages['fwd_message_string'].astype(str)
 
 
-print('Combining the three message columns into one.')
-#if message, take message else take fwd_message else take transcribed message
-messages['final_message'] = messages['message'].combine_first(messages['fwd_message']).combine_first(messages['transcribed_message']).astype(str)
+print('Combining the two message columns into one.')
+#if message, take message else take transcribed message
+messages['final_message'] = messages['message'].combine_first(messages['transcribed_message']).astype(str)
 # Compute the 'final_message_string' column
 messages['final_message_string'] = messages['message_string'].replace('nan', np.nan).combine_first(
-                                   messages['fwd_message_string'].replace('nan', np.nan)).combine_first(
                                    messages['transcribed_message'].replace('nan', np.nan)).astype(str)
 
 #in final_message_string, replace multiple whitespaces with one
@@ -88,7 +89,7 @@ messages['final_message_string'] = messages['final_message_string'].str.replace(
 # messages['preprocessed_message'] = preprocessed_messages
 
 #delete uneccessary columns
-messages = messages.drop(columns=['message', 'fwd_message', 'message_string', 'fwd_message_string', 'transcribed_message'], axis=1)
+messages = messages.drop(columns=['message', 'message_string', 'transcribed_message'], axis=1)
 print('Saving dataset.')
 os.makedirs('../../data/samples', exist_ok=True)
 messages.to_csv(f'../../data/samples/messages_sample_{sample_size}.csv.gzip', compression='gzip')
