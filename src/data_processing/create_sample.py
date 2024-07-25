@@ -39,9 +39,6 @@ channels = pd.read_csv('../../data/channel_subsample.csv.gzip', compression='gzi
 groups['group_or_channel'] = 'group'
 channels['group_or_channel'] = 'channel'
 
-groups = groups[groups['message'].notnull() | groups['transcribed_message'].notnull()]
-channels = channels[channels['message'].notnull()]
-
 group_len = len(groups)
 channel_len = len(channels)
 
@@ -64,8 +61,8 @@ else:
         print('Sample size too large for group & channels. Taking full datasets.')
         combined = pd.concat([groups, channels], ignore_index=True, axis=0)
     else:
-        sample_groups = groups[groups['message'].notnull() | groups['transcribed_message'].notnull()].sample(n=samplesize_group, random_state=random_state)
-        sample_channels = channels[channels['message'].notnull()].sample(n=samplesize_channel, random_state=random_state)
+        sample_groups = groups[groups['message'].notnull() | groups['transcribed_message'].notnull() | groups['fwd_message'].notnull()].sample(n=samplesize_group, random_state=random_state)
+        sample_channels = channels[channels['message'].notnull() | channels['fwd_message'].notnull()].sample(n=samplesize_channel, random_state=random_state)
         combined = pd.concat([sample_groups, sample_channels], ignore_index=True, axis=0)
 
 
@@ -78,7 +75,7 @@ combined['own_message'] = [1 if x else 0 for x in combined['message'].notnull()]
 combined['forwarded_message'] = [1 if x else 0 for x in combined['fwd_message'].notnull()]
 
 #keep only necessary columns
-messages = combined[['UID_key','author', 'message', 'date', 'transcribed_message', 'group_or_channel', 'own_message', 'forwarded_message']]
+messages = combined[['UID_key','author', 'message','fwd_message', 'date', 'transcribed_message', 'group_or_channel', 'own_message', 'forwarded_message', 'group_name']]
 
 
 #remove emojis and links
@@ -88,9 +85,16 @@ for message in messages['message'].astype(str):
     message = remove_tags(message)
     cleaned_messages.append(remove_emojis(message))
 
+cleaned_fwd_messages = []
+for message in messages['fwd_message'].astype(str):
+    message = remove_tags(message)
+    cleaned_fwd_messages.append(remove_emojis(message))
 
 messages['message_string'] = cleaned_messages
 messages['message_string'] = messages['message_string'].astype(str)
+
+messages['fwd_message_string'] = cleaned_fwd_messages
+messages['fwd_message_string'] = messages['fwd_message_string'].astype(str)
 
 
 print('Combining the two message columns into one.')

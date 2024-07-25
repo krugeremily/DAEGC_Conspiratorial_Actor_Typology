@@ -13,10 +13,11 @@ from tqdm import tqdm
 import pandas as pd
 import regex as re
 import numpy as np
+print('Libraries imported.')
 from functions.linguistic_features import count_emojis, count_pos_tags
 import textstat
 from transformers import AutoTokenizer, pipeline
-
+print('Functions imported.')
 ########## TIME ##########
 start_time = time.time()
 
@@ -26,19 +27,20 @@ parser.add_argument('--samplesize', type=str, default='100', help = 'Total sampl
 args = parser.parse_args()
 
 sample_size = args.samplesize #sample size of loaded dataset
-
+print('args parsed')
 ########## LOAD DATASET ##########
 
 messages = pd.read_csv(f'../../data/samples/messages_sample_{sample_size}.csv.gzip', compression='gzip').drop(columns=['Unnamed: 0'], axis=1)
 messages['final_message_string'] = messages['final_message_string'].astype(str)
+messages['final_message'] = messages['final_message'].astype(str)
 #messages['preprocessed_message'] = messages['preprocessed_message'].astype(str)
 
-########## COUNT BASED FEATURES ##########
+########## FEATURE EXTRACTION ##########
 
 #num sentences
-messages['sent_count'] = messages['final_message_string'].apply(lambda x: len(re.split(r'[.!?]+', x)) if x != '' else 0)
+messages['sent_count'] = messages['final_message_string'].apply(lambda x: len(re.split(r'[.!?]+', x)) if x != '' and x != 'nan' else 0)
 #num words
-messages['word_count'] = messages['final_message_string'].apply(lambda x: len(re.findall(r'\w+', x)) if x != '' else 0)
+messages['word_count'] = messages['final_message_string'].apply(lambda x: len(re.findall(r'\w+', x)) if x != '' and x != 'nan' else 0)
 #avg sentence length (words per sentence)
 messages['avg_sent_length'] = messages.apply(lambda row: row['word_count'] / row['sent_count'] if row['sent_count'] > 0 else 0, axis=1)
 #avg word length (characters per word)

@@ -22,7 +22,7 @@ sample_size = args.samplesize
 ########## RUN SCRIPTS ##########
 
 #create sample
-os.chdir('pre-processing')
+os.chdir('data_processing')
 subprocess.run(f'python create_sample.py --samplesize {sample_size}', shell=True)
 
 #convert csv to txt
@@ -45,7 +45,7 @@ os.chdir('..')
 #load separate results
 print('Merging results.')
 ling_features = pd.read_csv(f'../results/pre-aggregation/messages_with_features_{sample_size}.csv.gzip', compression='gzip').drop('Unnamed: 0', axis=1)
-liwc_ratios = pd.read_csv(f'../results/pre-aggregation/liwc_ratios_{sample_size}.csv', sep=',')
+liwc_ratios = pd.read_csv(f'../results/pre-aggregation/liwc_ratios_{sample_size}.csv.gzip', compression = 'gzip', sep=',')
 #exclude last column that only contains nan values
 liwc_ratios = liwc_ratios.iloc[:, :-1]
 
@@ -58,14 +58,12 @@ print('Complete results saved.')
 
 
 ########## AGGREGATE PER AUTHOR&MONTH AND PER AUTHOR&GROUP ##########
-
-
-
+os.chdir('data_processing')
+subprocess.run(f'python aggregation.py --samplesize {sample_size}', shell=True)
 
 ########## CALCULATE POST-AGGREGATION FEATURES ##########
-
-
-
+os.chdir('../analysis')
+subprocess.run(f'python postaggregation_feature_extraction.py --samplesize {sample_size}', shell=True)
 
 ########## TIME ##########
 end_time = time.time()
