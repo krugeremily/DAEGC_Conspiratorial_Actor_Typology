@@ -1,5 +1,8 @@
 import regex as re
 import spacy
+import json
+from googleapiclient import discovery
+from config import API_KEY
 
 ################## HANDLING EMOJIS ##################
 
@@ -50,7 +53,7 @@ def count_emojis(text):
                       ']+', re.UNICODE)
     return len(re.findall(emoj, text))
 
-################## Removing Links, URLs and other tags ##################
+################## REMOVING LINKS, URLS AND OTHER TAGS ##################
 
 def remove_tags(text):
     #remove everything within a tag
@@ -80,3 +83,28 @@ def count_pos_tags(text):
     verbs = pos_tags.count('VERB')
     adjectives = pos_tags.count('ADJ')
     return nouns, verbs, adjectives
+
+################## TOXICITY SCORE VIA PERSPECTIVE API ##################
+
+client = discovery.build(
+  "commentanalyzer",
+  "v1alpha1",
+  developerKey=API_KEY,
+  discoveryServiceUrl="https://commentanalyzer.googleapis.com/$discovery/rest?version=v1alpha1",
+  static_discovery=False,
+)
+
+def toxicity_detection(sentences):
+    toxic = []
+    for sent in sentences:
+        analyze_request = {
+            'comment': { 'text': f"{sent}" },
+            'languages' : ["de"],
+            'requestedAttributes': {'TOXICITY': {}},
+        }
+
+        response = client.comments().analyze(body=analyze_request).execute()
+        j = json.dumps(response, indent=2)
+        #print(json.loads(j)['attributeScores']['TOXICITY']['summaryScore']['value'])
+        toxic.append(json.loads(j)['attributeScores']['TOXICITY']['summaryScore']['value'])
+    return sum(toxic)/len(toxic)

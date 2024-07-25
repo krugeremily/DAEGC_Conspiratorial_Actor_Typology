@@ -37,19 +37,39 @@ channels = pd.read_csv('../../data/channel_subsample.csv.gzip', compression='gzi
 groups['group_or_channel'] = 'group'
 channels['group_or_channel'] = 'channel'
 
+groups = groups[groups['message'].notnull() | groups['transcribed_message'].notnull()]
+channels = channels[channels['message'].notnull()]
+
+group_len = len(groups)
+channel_len = len(channels)
+
 
 #if desired, take random sample of both df where either message or fwd_message (or transcribed_messgae if group) contains data and combine
-if sample_size != 'full':
-    print('Taking samples.')
-    sample_each = int(int(sample_size) / 2)
-    sample_groups = groups[groups['message'].notnull() | groups['transcribed_message'].notnull()].sample(n=sample_each, random_state=random_state)
-    sample_channels = channels[channels['message'].notnull()].sample(n=sample_each, random_state=random_state)
-    combined = pd.concat([sample_groups, sample_channels], ignore_index=True, axis=0)
+if sample_size == 'full':
+    combined = pd.concat([groups, channels], ignore_index=True, axis=0) 
 else:
-    combined = pd.concat([groups, channels], ignore_index=True, axis=0)
+    print('Taking samples.')
+    #try taking same amount of rows each
+    samplesize_group = int(int(sample_size) / 2)
+    samplesize_channel = int(int(sample_size) / 2)
+    #if not enough rows in channel, take full and rest from groups
+    if samplesize_channel > channel_len:
+        print('Sample size too large for channel. Taking full channel dataset.')
+        samplesize_channel = channel_len
+        samplesize_group = int(sample_size) - samplesize_channel
+    #if not enough rows in either, take both full datasets
+    if samplesize_group > group_len:
+        print('Sample size too large for group & channels. Taking full datasets.')
+        combined = pd.concat([groups, channels], ignore_index=True, axis=0)
+    else:
+        sample_groups = groups[groups['message'].notnull() | groups['transcribed_message'].notnull()].sample(n=samplesize_group, random_state=random_state)
+        sample_channels = channels[channels['message'].notnull()].sample(n=samplesize_channel, random_state=random_state)
+        combined = pd.concat([sample_groups, sample_channels], ignore_index=True, axis=0)
+
+
 
 #make date column for aggregation
-combined['date'] = str(combined['year']) + '-' + str(combined['month'])
+combined['date'] = combined.apply(lambda row: f"{str(row['year'])}-{str(row['month'])}", axis=1)
 
 #for counting own and transcribed messages
 combined['own_message'] = [1 if x else 0 for x in combined['message'].notnull()]
