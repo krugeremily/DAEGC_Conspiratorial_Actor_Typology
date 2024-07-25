@@ -1,8 +1,6 @@
 import regex as re
 import spacy
 import json
-from googleapiclient import discovery
-from config import API_KEY
 
 ################## HANDLING EMOJIS ##################
 
@@ -86,15 +84,7 @@ def count_pos_tags(text):
 
 ################## TOXICITY SCORE VIA PERSPECTIVE API ##################
 
-client = discovery.build(
-  "commentanalyzer",
-  "v1alpha1",
-  developerKey=API_KEY,
-  discoveryServiceUrl="https://commentanalyzer.googleapis.com/$discovery/rest?version=v1alpha1",
-  static_discovery=False,
-)
-
-def toxicity_detection(sentences):
+def toxicity_detection(sentences, client):
     toxic = []
     for sent in sentences:
         analyze_request = {

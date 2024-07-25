@@ -12,6 +12,7 @@ import pandas as pd
 import numpy as np
 from functions.linguistic_features import remove_emojis, remove_tags, preprocess_text
 from tqdm import tqdm
+print('Imports done.')
 
 
 ########## TIME ##########
@@ -19,12 +20,13 @@ start_time = time.time()
 
 ########## SET PARAMETERS ##########
 parser = argparse.ArgumentParser()
-parser.add_argument('--samplesize', type=str, default='100', help = 'Total sample size combined from two datasets as int or "full"')
+parser.add_argument('--samplesize', type=str, default='200', help = 'Total sample size combined from two datasets as int or "full"')
 parser.add_argument('--seed', type=int, default=42, help='Random seed for sampling')
 args = parser.parse_args()
 
 sample_size = args.samplesize
 random_state = args.seed
+
 
 ########## LOAD AND PREPARE DATASET ##########
 

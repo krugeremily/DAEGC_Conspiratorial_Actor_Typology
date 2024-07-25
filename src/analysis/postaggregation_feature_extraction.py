@@ -15,6 +15,9 @@ import regex as re
 from tqdm import tqdm
 import random
 
+from googleapiclient import discovery
+from config import API_KEY
+
 ########## TIME ##########
 start_time = time.time()
 
@@ -38,6 +41,15 @@ post_agg['final_message_string'] = post_agg['final_message_string'].astype(str)
 #initialize column
 post_agg['toxicity'] = 0
 
+#build client
+client = discovery.build(
+  "commentanalyzer",
+  "v1alpha1",
+  developerKey=API_KEY,
+  discoveryServiceUrl="https://commentanalyzer.googleapis.com/$discovery/rest?version=v1alpha1",
+  static_discovery=False,
+)
+
 #split df into chunks
 n= 10000
 list_df = [post_agg[i:i+n] for i in range(0,len(post_agg),n)]
@@ -55,7 +67,7 @@ for df in list_df:
             if (len(tmp) > 100):
                 tmp = random.sample(tmp, 100)
             if (len(tmp) > 1):
-                row['toxicity'] = toxicity_detection(tmp)
+                row['toxicity'] = toxicity_detection(tmp, client)
 
         post_agg.at[i, 'toxicity'] = row['toxicity']
 
