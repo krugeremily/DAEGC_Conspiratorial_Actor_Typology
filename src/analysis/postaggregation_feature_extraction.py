@@ -55,14 +55,14 @@ count_columns = [
     'neutral_sentiment',
     'channel_messages',
     'group_messages',
-    'flesch_reading_ease_class_difficult',
-    'flesch_reading_ease_class_easy',
-    'flesch_reading_ease_class_fairly difficult',
-    'flesch_reading_ease_class_fairly easy',
-    'flesch_reading_ease_class_standard',
-    'flesch_reading_ease_class_unclassified',
-    'flesch_reading_ease_class_very confusing',
-    'flesch_reading_ease_class_very easy'
+    # 'flesch_reading_ease_class_difficult',
+    # 'flesch_reading_ease_class_easy',
+    # 'flesch_reading_ease_class_fairly difficult',
+    # 'flesch_reading_ease_class_fairly easy',
+    # 'flesch_reading_ease_class_standard',
+    # 'flesch_reading_ease_class_unclassified',
+    # 'flesch_reading_ease_class_very confusing',
+    # 'flesch_reading_ease_class_very easy'
 ]
 
 ########## ITERATE OVER DATAFRAMES ##########
@@ -75,6 +75,32 @@ for df in tqdm([author_date, author_group], desc='Calculating post-aggregation f
 
     ########## ACTION QUOTIENT ##########
     df['action_quotient'] = df['verb_count'] / df['adj_count']
+
+    ########## SENTIMENT QUOTIENT ##########
+    df['sentiment_quotient'] = df['positive_sentiment'] / df['negative_sentiment']
+
+    ########## AVERAGE FLESCH READING EASE SCORE ##########
+    #classify scores based on: https://pypi.org/project/textstat/
+    flesch_classes = []
+    for score in df['flesch_reading_ease']:
+        if score >= 0 and score < 30:
+            flesch_classes.append('very confusing')
+        elif score >= 30 and score < 50:
+            flesch_classes.append('difficult')
+        elif score >= 50 and score < 60:
+            flesch_classes.append('fairly difficult')
+        elif score >=60 and score < 70:
+            flesch_classes.append('standard')
+        elif score >=70 and score < 80:
+            flesch_classes.append('fairly easy')
+        elif score >=80 and score < 90:
+            flesch_classes.append('easy')
+        elif score >=90 and score < 101:
+            flesch_classes.append('very easy')
+        else:
+            flesch_classes.append('unclassified')
+        
+    df['avg_flesch_reading_ease_class'] = flesch_classes
 
     ########## TOXICITY SCORE ##########
 
