@@ -49,40 +49,50 @@ static_discovery=False,
 )
 
 ########## DEFINE COUNT BASED FEATURES ##########
+#linguistic feature counts
 count_columns = [
-    'own_message',
-    'forwarded_message',
     'positive_sentiment',
     'negative_sentiment',
     'neutral_sentiment',
     'channel_messages',
     'group_messages',
-    # 'flesch_reading_ease_class_difficult',
-    # 'flesch_reading_ease_class_easy',
-    # 'flesch_reading_ease_class_fairly difficult',
-    # 'flesch_reading_ease_class_fairly easy',
-    # 'flesch_reading_ease_class_standard',
-    # 'flesch_reading_ease_class_unclassified',
-    # 'flesch_reading_ease_class_very confusing',
-    # 'flesch_reading_ease_class_very easy'
 ]
+#for message ratios
+message_columns = [
+    'own_message',
+    'forwarded_message'
+    ]
 
 ########## ITERATE OVER DATAFRAMES ##########
 print('Iterating over dataframes to extract features...')
 for df in tqdm([author_date, author_group, author], desc='Calculating post-aggregation features'):
+    df['own_message_count'] = df['own_message']
+    df['forwarded_message_count'] = df['forwarded_message']
+    ########## RATIO OF OWN VS. FORWARDED MESSAGES ##########
+    for index, row in df.iterrows():
+        for col in message_columns:
+            df.at[index, col] = row[col] / row['total_message_count']
     ########## CONVERT COUNTS TO PERCENTAGES ##########
     for index, row in df.iterrows():
         for col in count_columns:
-            df.at[index, col] = row[col] / row['message_count']
-
-    ########## ACTION QUOTIENT ##########
-    df['action_quotient'] = df['verb_count'] / df['adj_count']
-
-    ########## SENTIMENT QUOTIENT ##########
-    df['sentiment_quotient'] = df['positive_sentiment'] / df['negative_sentiment']
+            if row['own_message_count'] == 0:
+                df.at[index, col] = np.nan
+            else:
+                df.at[index, col] = row[col] / row['own_message_count']
+        ########## ACTION QUOTIENT ##########
+        if row['adj_count'] == 0:
+            df.at[index, 'action_quotient'] = np.nan
+        else:
+            df.at[index, 'action_quotient'] = row['verb_count'] / row['adj_count']
+        ########## SENTIMENT QUOTIENT ##########
+        if row['negative_sentiment'] == 0:
+            df.at[index, 'sentiment_quotient'] = np.nan
+        else:
+            df.at[index, 'sentiment_quotient'] = row['positive_sentiment'] / row['negative_sentiment']
 
     ########## AVERAGE FLESCH READING EASE SCORE ##########
     #classify scores based on: https://pypi.org/project/textstat/
+    df['flesch_reading_ease'] = [x if 0 <= x <= 100 else np.nan for x in df['flesch_reading_ease']]
     flesch_classes = []
     for score in df['flesch_reading_ease']:
         if score >= 0 and score < 30:
@@ -143,4 +153,4 @@ print('Post aggregation results saved.')
 
 ########## TIME ##########
 end_time = time.time()
-print(f'Post-aggregation feature extraction done in {(end_time - start_time)/60} minutes.')
+print(f'Post-aggregation feature extraction done on sample size of {sample_size} in {(end_time - start_time)/60} minutes.')
