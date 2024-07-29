@@ -90,6 +90,14 @@ agg_author_group = agg_author_group.rename(columns=rename_dict)
 agg_author_group.to_csv(f'../../data/aggregated/author_group_{sample_size}.csv.gzip', compression='gzip')
 print('Aggregation per author and group complete.')
 
+########## AGGREGATE PER AUTHOR ##########
+
+print('Aggregating per author...')
+agg_author = pre_agg.groupby(['author']).agg(agg_dict)
+agg_author = agg_author.rename(columns=rename_dict)
+agg_author.to_csv(f'../../data/aggregated/author_{sample_size}.csv.gzip', compression='gzip')
+print('Aggregation per author complete.')
+
 ########## TIME ##########
 end_time = time.time()
 print(f'Aggregation complete in {(end_time - start_time)} seconds.')
