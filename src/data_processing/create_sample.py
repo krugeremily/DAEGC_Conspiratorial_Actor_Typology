@@ -68,7 +68,8 @@ else:
 
 
 #make date column for aggregation
-combined['date'] = combined.apply(lambda row: f"{str(row['year'])}-{str(row['month'])}", axis=1)
+combined['date'] = combined.apply(lambda row: f"{int(row['year'])}-{int(row['month'])}", axis=1)
+combined['date'] = pd.to_datetime(combined['date'], format='%Y-%m')
 
 #for counting own and transcribed messages
 combined['own_message'] = [1 if x else 0 for x in combined['message'].notnull()]
