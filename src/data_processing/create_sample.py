@@ -32,8 +32,8 @@ random_state = args.seed
 
 #load two datasets, drop unnecessary columns and add column to indicate group or channel
 print('Loading datsets.')
-groups = pd.read_csv('../../data/selected_groups_with_transcriptions.csv.gzip', compression='gzip').drop(columns=['Unnamed: 0'], axis=1)
-channels = pd.read_csv('../../data/channel_subsample.csv.gzip', compression='gzip').drop(columns=['Unnamed: 0', 'Unnamed: 0.1'], axis=1)
+groups = pd.read_csv('../../data/selected_groups_total.csv.gzip', compression='gzip', usecols = ['UID_key','author', 'message','fwd_message', 'transcribed_message', 'group_name', 'posting_date']).drop(columns=['Unnamed: 0'], axis=1)
+channels = pd.read_csv('../../data/channel_subsample.csv.gzip', compression='gzip', usecols = ['UID_key','author', 'message','fwd_message', 'group_name', 'posting_date']).drop(columns=['Unnamed: 0', 'Unnamed: 0.1'], axis=1)
 
 
 groups['group_or_channel'] = 'group'
@@ -68,8 +68,7 @@ else:
 
 
 #make date column for aggregation
-combined['date'] = combined.apply(lambda row: f"{int(row['year'])}-{int(row['month'])}", axis=1)
-combined['date'] = pd.to_datetime(combined['date'], format='%Y-%m')
+combined['date'] = pd.to_datetime(combined['posting_date']).dt.date
 
 #for counting own and transcribed messages
 combined['own_message'] = [1 if x else 0 for x in combined['message'].notnull()]
