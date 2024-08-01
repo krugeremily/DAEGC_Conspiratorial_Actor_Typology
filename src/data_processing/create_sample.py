@@ -70,8 +70,8 @@ else:
 #make date column for aggregation
 combined['date'] = pd.to_datetime(combined['posting_date']).dt.date
 
-#for counting own and transcribed messages
-combined['own_message'] = [1 if x else 0 for x in combined['message'].notnull()]
+#for counting own and forwarded messages
+combined['own_message'] = [1 if x or y else 0 for x, y in zip(combined['message'].notnull(), combined['transcribed_message'].notnull())]
 combined['forwarded_message'] = [1 if x else 0 for x in combined['fwd_message'].notnull()]
 
 #keep only necessary columns
