@@ -39,6 +39,7 @@ author_group['final_message_string'] = author_group['final_message_string'].asty
 author = pd.read_csv(f'../../data/aggregated/author_{sample_size}.csv.gzip', compression='gzip')
 author['final_message_string'] = author['final_message_string'].astype(str)
 
+print('Extracting post-aggregation features from messages.')
 ########## SET UP TOXICITY API ##########
 client = discovery.build(
 "commentanalyzer",
@@ -114,36 +115,34 @@ for df in tqdm([author_date, author_group, author], desc='Calculating post-aggre
         
     df['avg_flesch_reading_ease_class'] = flesch_classes
 
-    ########## TOXICITY SCORE ##########
+    ######### TOXICITY SCORE ##########
 
-    # #initialize column
-    # df['toxicity'] = 0
+    #initialize column
+    df['toxicity'] = 0
 
-    # #split df into chunks
-    # n= 10000
-    # list_df = [df[i:i+n] for i in range(0,len(df),n)]
+    #split df into chunks
+    n= 10000
+    list_df = [df[i:i+n] for i in range(0,len(df),n)]
 
-    # #iterate over chunks and rows to extract toxicity score
-    # final_toxic_list = []
-    # for df in list_df:
-    #     for i in tqdm(range(len(df))):
-    #         row = df.iloc[i]
-    #         toxic = []
-    #         if row['toxicity'] == 0: 
-    #             #split message into list of sentences to pass to toxicity detection function
-    #             tmp = [sent.strip() for sent in re.split(r'[.!?]', row['final_message_string']) if len(sent.split()) > 5]
+    #iterate over chunks and rows to extract toxicity score
+    final_toxic_list = []
+    for chunk in list_df:
+        for i in tqdm(range(len(df))):
+            row = chunk.iloc[i]
+            if row['toxicity'] == 0: 
+                #split message into list of sentences to pass to toxicity detection function
+                tmp = [sent.strip() for sent in re.split(r'[.!?]', row['final_message_string']) if len(sent.split()) > 5]
 
-    #             if (len(tmp) > 100):
-    #                 tmp = random.sample(tmp, 100)
-    #             if (len(tmp) > 1):
-    #                 row['toxicity'] = toxicity_detection(tmp, client)
+                if (len(tmp) > 100):
+                    tmp = random.sample(tmp, 100)
+                #print(tmp)
+                if (len(tmp) > 1):
+                    row['toxicity'] = toxicity_detection(tmp, client)
+            chunk.at[chunk.index[i], 'toxicity'] = row['toxicity']
+        final_toxic_list.append(chunk)
 
-    #         df.at[i, 'toxicity'] = row['toxicity']
-
-    #     final_toxic_list.append(df)
-
-    # #concat chunks
-    # df = pd.concat(final_toxic_list)
+    #concat chunks
+    df = pd.concat(final_toxic_list)
 
 ########## SAVE FILE ##########
 author_date.to_csv(f'../../results/post-aggregation/author_date_{sample_size}.csv.gzip', compression='gzip', index=False)

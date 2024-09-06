@@ -3,6 +3,8 @@ csh_venv/
 data/
 utils/ClassifierBasedGermanTagger/
 config.py
+archive/
+
 #temp files
 *.DS_Store
 __pycache__

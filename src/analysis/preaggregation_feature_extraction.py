@@ -13,11 +13,9 @@ from tqdm import tqdm
 import pandas as pd
 import regex as re
 import numpy as np
-print('Libraries imported.')
 from functions.linguistic_features import count_emojis, count_pos_tags
 import textstat
 from transformers import AutoTokenizer, pipeline
-print('Functions imported.')
 ########## TIME ##########
 start_time = time.time()
 
@@ -27,7 +25,6 @@ parser.add_argument('--samplesize', type=str, default='100', help = 'Total sampl
 args = parser.parse_args()
 
 sample_size = args.samplesize #sample size of loaded dataset
-print('args parsed')
 ########## LOAD DATASET ##########
 
 messages = pd.read_csv(f'../../data/samples/messages_sample_{sample_size}.csv.gzip', compression='gzip').drop(columns=['Unnamed: 0'], axis=1)
@@ -35,6 +32,7 @@ messages['final_message_string'] = messages['final_message_string'].astype(str)
 messages['final_message'] = messages['final_message'].astype(str)
 #messages['preprocessed_message'] = messages['preprocessed_message'].astype(str)
 
+print('Extraxting pre-aggregation features from messages.')
 ########## FEATURE EXTRACTION ##########
 
 #num sentences
@@ -153,4 +151,4 @@ messages.to_csv(f'../../results/pre-aggregation/messages_with_features_{sample_s
 end_time = time.time()
 seconds = end_time - start_time
 minutes = seconds / 60
-print(f'Feature extraction done. Runtime: {seconds} seconds (corresponds to {minutes} minutes) for sample of {sample_size}')
+print(f'Pre-Aggregation Feature extraction done. Runtime: {seconds} seconds (corresponds to {minutes} minutes) for sample of {sample_size}')

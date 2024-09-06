@@ -28,47 +28,59 @@ sample_size = args.samplesize
 random_state = args.seed
 
 
-########## LOAD AND PREPARE DATASET ##########
+########## LOAD DATASET ##########
 
-#load two datasets, drop unnecessary columns and add column to indicate group or channel
+# USE THIS CODE IF YOU WANT TO LOAD THE TWO SEPARATED DATASETS (COMPLETE TIMEFRAME)
+
+# #load two datasets, drop unnecessary columns and add column to indicate group or channel
+# print('Loading datsets.')
+# groups = pd.read_csv('../../data/selected_groups_total.csv.gzip', compression='gzip', usecols = ['UID_key','author', 'message','fwd_message', 'transcribed_message', 'group_name', 'posting_date']).drop(columns=['Unnamed: 0'], axis=1)
+# channels = pd.read_csv('../../data/channel_subsample.csv.gzip', compression='gzip', usecols = ['UID_key','author', 'message','fwd_message', 'group_name', 'posting_date']).drop(columns=['Unnamed: 0', 'Unnamed: 0.1'], axis=1)
+
+
+# groups['group_or_channel'] = 'group'
+# channels['group_or_channel'] = 'channel'
+
+# group_len = len(groups)
+# channel_len = len(channels)
+
+
+# #if desired, take random sample of both df where either message or fwd_message (or transcribed_messgae if group) contains data and combine
+# if sample_size == 'full':
+#     combined = pd.concat([groups, channels], ignore_index=True, axis=0) 
+# else:
+#     print('Taking samples.')
+#     #try taking same amount of rows each
+#     samplesize_group = int(int(sample_size) / 2)
+#     samplesize_channel = int(int(sample_size) / 2)
+#     #if not enough rows in channel, take full and rest from groups
+#     if samplesize_channel > channel_len:
+#         print('Sample size too large for channel. Taking full channel dataset.')
+#         samplesize_channel = channel_len
+#         samplesize_group = int(sample_size) - samplesize_channel
+#     #if not enough rows in either, take both full datasets
+#     if samplesize_group > group_len:
+#         print('Sample size too large for group & channels. Taking full datasets.')
+#         combined = pd.concat([groups, channels], ignore_index=True, axis=0)
+#     else:
+#         sample_groups = groups[groups['message'].notnull() | groups['transcribed_message'].notnull() | groups['fwd_message'].notnull()].sample(n=samplesize_group, random_state=random_state)
+#         sample_channels = channels[channels['message'].notnull() | channels['fwd_message'].notnull()].sample(n=samplesize_channel, random_state=random_state)
+#         combined = pd.concat([sample_groups, sample_channels], ignore_index=True, axis=0)
+
+
+# USE THIS CODE IF YOU WANT TO LOAD THE COMBINED JAN2021 SUBSET
 print('Loading datsets.')
-groups = pd.read_csv('../../data/selected_groups_total.csv.gzip', compression='gzip', usecols = ['UID_key','author', 'message','fwd_message', 'transcribed_message', 'group_name', 'posting_date']).drop(columns=['Unnamed: 0'], axis=1)
-channels = pd.read_csv('../../data/channel_subsample.csv.gzip', compression='gzip', usecols = ['UID_key','author', 'message','fwd_message', 'group_name', 'posting_date']).drop(columns=['Unnamed: 0', 'Unnamed: 0.1'], axis=1)
+full_data = pd.read_csv('../../data/january_2021_groups_and_channels.csv.gzip', compression='gzip').drop(columns=['Unnamed: 0'], axis=1)
 
+# take random sample according to samplesize
+combined = full_data.sample(n=int(sample_size), random_state=random_state)
 
-groups['group_or_channel'] = 'group'
-channels['group_or_channel'] = 'channel'
+########## CLEAN DATASET ##########
 
-group_len = len(groups)
-channel_len = len(channels)
+# FROM HERE CODE WORKS FOR BOTH DATASETS
 
-
-#if desired, take random sample of both df where either message or fwd_message (or transcribed_messgae if group) contains data and combine
-if sample_size == 'full':
-    combined = pd.concat([groups, channels], ignore_index=True, axis=0) 
-else:
-    print('Taking samples.')
-    #try taking same amount of rows each
-    samplesize_group = int(int(sample_size) / 2)
-    samplesize_channel = int(int(sample_size) / 2)
-    #if not enough rows in channel, take full and rest from groups
-    if samplesize_channel > channel_len:
-        print('Sample size too large for channel. Taking full channel dataset.')
-        samplesize_channel = channel_len
-        samplesize_group = int(sample_size) - samplesize_channel
-    #if not enough rows in either, take both full datasets
-    if samplesize_group > group_len:
-        print('Sample size too large for group & channels. Taking full datasets.')
-        combined = pd.concat([groups, channels], ignore_index=True, axis=0)
-    else:
-        sample_groups = groups[groups['message'].notnull() | groups['transcribed_message'].notnull() | groups['fwd_message'].notnull()].sample(n=samplesize_group, random_state=random_state)
-        sample_channels = channels[channels['message'].notnull() | channels['fwd_message'].notnull()].sample(n=samplesize_channel, random_state=random_state)
-        combined = pd.concat([sample_groups, sample_channels], ignore_index=True, axis=0)
-
-
-
-#make date column for aggregation
-combined['date'] = pd.to_datetime(combined['posting_date']).dt.date
+# make sure column is properly formatted for aggregation
+combined['date'] = pd.to_datetime(combined['date']).dt.date
 
 #for counting own and forwarded messages
 combined['own_message'] = [1 if x or y else 0 for x, y in zip(combined['message'].notnull(), combined['transcribed_message'].notnull())]
@@ -113,6 +125,9 @@ messages['final_message_string'] = messages['final_message_string'].str.replace(
 #     message = preprocess_text(message)
 #     preprocessed_messages.append(message)
 # messages['preprocessed_message'] = preprocessed_messages
+
+
+########## SAVE DATASET ##########
 
 #delete uneccessary columns
 messages = messages.drop(columns=['message', 'message_string', 'transcribed_message'], axis=1)

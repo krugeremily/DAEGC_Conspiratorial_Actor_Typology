@@ -97,4 +97,6 @@ def toxicity_detection(sentences, client):
         j = json.dumps(response, indent=2)
         #print(json.loads(j)['attributeScores']['TOXICITY']['summaryScore']['value'])
         toxic.append(json.loads(j)['attributeScores']['TOXICITY']['summaryScore']['value'])
-    return sum(toxic)/len(toxic)
+    avg = sum(toxic)/len(toxic)
+    #print(avg)
+    return avg
