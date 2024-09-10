@@ -72,8 +72,10 @@ random_state = args.seed
 print('Loading datsets.')
 full_data = pd.read_csv('../../data/january_2021_groups_and_channels.csv.gzip', compression='gzip').drop(columns=['Unnamed: 0'], axis=1)
 
-# take random sample according to samplesize
-combined = full_data.sample(n=int(sample_size), random_state=random_state)
+if sample_size != 'full':
+    # take random sample according to samplesize (and some buffer for messages who will be empty after cleaning)
+    sample = min(int(sample_size) + 500, len(full_data))
+    combined = full_data[(full_data['message'].notnull()) | (full_data['fwd_message'].notnull()) | (full_data['transcribed_message'].notnull())].sample(n=int(sample_size), random_state=random_state)
 
 ########## CLEAN DATASET ##########
 
@@ -87,7 +89,7 @@ combined['own_message'] = [1 if x or y else 0 for x, y in zip(combined['message'
 combined['forwarded_message'] = [1 if x else 0 for x in combined['fwd_message'].notnull()]
 
 #keep only necessary columns
-messages = combined[['UID_key','author', 'message','fwd_message', 'date', 'transcribed_message', 'group_or_channel', 'own_message', 'forwarded_message', 'group_name']]
+messages = combined[['UID_key','author', 'message','fwd_message', 'fwd_author', 'date', 'transcribed_message', 'group_or_channel', 'own_message', 'forwarded_message', 'group_name']]
 
 
 #remove emojis and links
@@ -126,7 +128,13 @@ messages['final_message_string'] = messages['final_message_string'].str.replace(
 #     preprocessed_messages.append(message)
 # messages['preprocessed_message'] = preprocessed_messages
 
+print(type(messages['final_message_string'].values[0]))
+print(type(messages['fwd_message_string'].values[0]))
 
+if sample_size != 'full':
+    messages = messages[(messages['final_message_string'] != '') | (messages['fwd_message_string'] != '')].sample(n=int(sample_size), random_state=random_state)
+else: 
+    messages = messages[(messages['final_message_string'] != '') | (messages['fwd_message_string'] != '')]
 ########## SAVE DATASET ##########
 
 #delete uneccessary columns

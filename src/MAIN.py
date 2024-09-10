@@ -21,22 +21,22 @@ sample_size = args.samplesize
 
 ########## RUN SCRIPTS ##########
 
-#create sample
+# create sample
 os.chdir('data_processing')
 subprocess.run(f'python create_sample.py --samplesize {sample_size}', shell=True)
 
-#convert csv to txt
-# subprocess.run(f'python pd_to_txt.py --samplesize {sample_size}', shell=True)
+# convert csv to txt
+subprocess.run(f'python pd_to_txt.py --samplesize {sample_size}', shell=True)
 
 os.chdir('../analysis')
-#extract count-based features & sentiment
+# extract count-based features & sentiment
 subprocess.run(f'python preaggregation_feature_extraction.py --samplesize {sample_size}', shell=True)
 
 #run gawk script to for liwc classification
-# awk_start = time.time()
-# subprocess.run(f'gawk -f liwc_category_ratios.awk ../../data/liwc_german_2007.txt ../../data/samples/messages_sample_{sample_size}.txt | gzip > ../../results/pre-aggregation/liwc_ratios_{sample_size}.csv.gzip', shell=True)
-# awk_end = time.time()
-# print(f'LIWC classification done in {awk_end - awk_start} seconds.')
+awk_start = time.time()
+subprocess.run(f'gawk -f liwc_category_ratios.awk ../../data/liwc_german_2007.txt ../../data/samples/messages_sample_{sample_size}.txt | gzip > ../../results/pre-aggregation/liwc_ratios_{sample_size}.csv.gzip', shell=True)
+awk_end = time.time()
+print(f'LIWC classification done in {awk_end - awk_start} seconds.')
 
 
 ########## MERGE RESULTS ##########
@@ -50,7 +50,7 @@ liwc_ratios = pd.read_csv(f'../results/pre-aggregation/liwc_ratios_{sample_size}
 liwc_ratios = liwc_ratios.iloc[:, :-1]
 
 #concat liwc_ratios and ling_features based on UID_key
-merged = pd.merge(ling_features, liwc_ratios, on='UID_key', how='inner')
+merged = pd.merge(ling_features, liwc_ratios, on='UID_key', how='outer')
 
 #save file
 merged.to_csv(f'../results/pre-aggregation/liwcANDfeatures_results_{sample_size}.csv.gzip', compression='gzip', index=False)

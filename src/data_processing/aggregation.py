@@ -25,11 +25,11 @@ print('Dummies for categorial variables created.')
 ########## SAMPLE TO CALCULATE MESSAGE RATIOS ##########
 """
 Calculating the ratio of own vs. forwarded messages has to be calculated separately and before the aggregation of other features.
-As thelinguistic features are only calculate on own messages, and forearded message sare assigned nan or 0 values, including them in the ratio would scew results.
+As the linguistic features are only calculate on own messages, and forearded messages are assigned nan or 0 values, including them in the ratio would scew results.
 Instead the ratios will be calculated separately and added to the aggregated dataframes afterwards.
 """
 
-messages = pre_agg[['author', 'own_message', 'forwarded_message', 'UID_key', 'group_name', 'date']]
+messages = pre_agg[['author', 'own_message', 'forwarded_message', 'fwd_author', 'UID_key', 'group_name', 'date']]
 pre_agg = pre_agg[pre_agg['own_message'] == 1]
 
 ########## DEFINE AGGREGATION DICT ##########
@@ -78,25 +78,32 @@ rename_dict = {'group_or_channel_channel': 'channel_messages', 'group_or_channel
 
 ########## AGGREGATE PER AUTHOR&MONTH ##########
 
-print('Aggregating per author and month...')
+# print('Aggregating per author and month...')
 
-#aggregate linguistic features
-agg_author_date = pre_agg.groupby(['author', 'date']).agg(agg_dict)
-agg_author_date = agg_author_date.rename(columns=rename_dict)
-#aggregate message ratios
-agg_author_date_messages = messages.groupby(['author', 'date']).agg(agg_dict_messages)
-agg_author_date_messages = agg_author_date_messages.rename(columns=rename_dict)
-#concat based on author and date columns
-agg_author_date = pd.merge(
-    left = agg_author_date,
-    right = agg_author_date_messages,
-    how = 'outer',
-    left_on = ['author', 'date'],
-    right_on = ['author', 'date']
-)
-#save to csv
-agg_author_date.to_csv(f'../../data/aggregated/author_date_{sample_size}.csv.gzip', compression='gzip')
-print('Aggregation per author and month complete.')
+# #aggregate linguistic features
+# agg_author_date = pre_agg.groupby(['author', 'date']).agg(agg_dict)
+# agg_author_date = agg_author_date.rename(columns=rename_dict)
+# #aggregate message ratios
+# agg_author_date_messages = messages.groupby(['author', 'date']).agg(agg_dict_messages)
+# agg_author_date_messages = agg_author_date_messages.rename(columns=rename_dict)
+# #concat based on author and date columns
+# agg_author_date = pd.merge(
+#     left = agg_author_date,
+#     right = agg_author_date_messages,
+#     how = 'outer',
+#     left_on = ['author', 'date'],
+#     right_on = ['author', 'date']
+# )
+
+# # measure for how often author was forwarded
+# for author,date in agg_author_date.index:
+#     # count how often message by this author was forwarded in this group
+#     was_forwarded_author_date = len(messages[(messages['fwd_author'] == author) & (messages['date'] == date)])
+# agg_author_date['was_forwarded'] = was_forwarded_author_date
+
+# #save to csv
+# agg_author_date.to_csv(f'../../data/aggregated/author_date_{sample_size}.csv.gzip', compression='gzip')
+# print('Aggregation per author and month complete.')
 
 ########## AGGREGATE PER AUTHOR&GROUP ##########
 
@@ -115,6 +122,15 @@ agg_author_group = pd.merge(
     left_on = ['author', 'group_name'],
     right_on = ['author', 'group_name']
 )
+
+# measure for how often author was forwarded
+was_forwarded_author_group = []
+for author,group in agg_author_group.index:
+    # count how often message by this author was forwarded in this group
+    fwd = len(messages[(messages['fwd_author'] == author) & (messages['group_name'] == group)])
+    was_forwarded_author_group.append(fwd)
+agg_author_group['was_forwarded'] = was_forwarded_author_group
+
 #save to csv
 agg_author_group.to_csv(f'../../data/aggregated/author_group_{sample_size}.csv.gzip', compression='gzip')
 print('Aggregation per author and group complete.')
@@ -135,6 +151,15 @@ agg_author = pd.merge(
     left_on = ['author'],
     right_on = ['author']
 )
+
+# measure for how often author was forwarded
+was_forwarded_author = []
+for author in agg_author.index:
+    # count how often message by this author was forwarded in this group
+    fwd = len(messages[(messages['fwd_author'] == author)])
+    was_forwarded_author.append(fwd)
+agg_author['was_forwarded'] = was_forwarded_author
+
 #save to csv
 agg_author.to_csv(f'../../data/aggregated/author_{sample_size}.csv.gzip', compression='gzip')
 print('Aggregation per author complete.')

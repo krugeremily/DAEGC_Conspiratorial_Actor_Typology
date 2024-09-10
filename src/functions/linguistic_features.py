@@ -1,6 +1,5 @@
 import regex as re
 import spacy
-import json
 
 ################## HANDLING EMOJIS ##################
 
@@ -84,19 +83,12 @@ def count_pos_tags(text):
 
 ################## TOXICITY SCORE VIA PERSPECTIVE API ##################
 
-def toxicity_detection(sentences, client):
-    toxic = []
-    for sent in sentences:
-        analyze_request = {
-            'comment': { 'text': f"{sent}" },
-            'languages' : ["de"],
-            'requestedAttributes': {'TOXICITY': {}},
-        }
-
-        response = client.comments().analyze(body=analyze_request).execute()
-        j = json.dumps(response, indent=2)
-        #print(json.loads(j)['attributeScores']['TOXICITY']['summaryScore']['value'])
-        toxic.append(json.loads(j)['attributeScores']['TOXICITY']['summaryScore']['value'])
-    avg = sum(toxic)/len(toxic)
-    #print(avg)
-    return avg
+def toxicity_detection(message, client):
+    analyze_request = {
+        'comment': { 'text': f"{message}" },
+        'languages' : ["de"],
+        'requestedAttributes': {'TOXICITY': {}},
+    }
+    response = client.comments().analyze(body=analyze_request).execute()
+    toxic =response['attributeScores']['TOXICITY']['summaryScore']['value']
+    return toxic

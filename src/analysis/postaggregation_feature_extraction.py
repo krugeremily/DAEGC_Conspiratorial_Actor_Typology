@@ -32,8 +32,8 @@ sample_size = args.samplesize
 
 ########## LOAD DATASET ##########
 print('Loading datasets...')
-author_date = pd.read_csv(f'../../data/aggregated/author_date_{sample_size}.csv.gzip', compression='gzip')
-author_date['final_message_string'] = author_date['final_message_string'].astype(str)
+# author_date = pd.read_csv(f'../../data/aggregated/author_date_{sample_size}.csv.gzip', compression='gzip')
+# author_date['final_message_string'] = author_date['final_message_string'].astype(str)
 author_group = pd.read_csv(f'../../data/aggregated/author_group_{sample_size}.csv.gzip', compression='gzip')
 author_group['final_message_string'] = author_group['final_message_string'].astype(str)
 author = pd.read_csv(f'../../data/aggregated/author_{sample_size}.csv.gzip', compression='gzip')
@@ -66,7 +66,8 @@ message_columns = [
 
 ########## ITERATE OVER DATAFRAMES ##########
 print('Iterating over dataframes to extract features...')
-for df in tqdm([author_date, author_group, author], desc='Calculating post-aggregation features'):
+# for df in tqdm([author_date, author_group, author], desc='Calculating post-aggregation features'):
+for df in tqdm([author_group, author], desc='Calculating post-aggregation features'):
     df['own_message_count'] = df['own_message']
     df['forwarded_message_count'] = df['forwarded_message']
     ########## RATIO OF OWN VS. FORWARDED MESSAGES ##########
@@ -115,37 +116,24 @@ for df in tqdm([author_date, author_group, author], desc='Calculating post-aggre
         
     df['avg_flesch_reading_ease_class'] = flesch_classes
 
-    ######### TOXICITY SCORE ##########
+    # ######### TOXICITY SCORE ##########
 
-    #initialize column
-    df['toxicity'] = 0
+    #initialize list for col
+    toxicity = []
 
-    #split df into chunks
-    n= 10000
-    list_df = [df[i:i+n] for i in range(0,len(df),n)]
+    for i in tqdm(range(len(df))):
+        row = df.iloc[i]
+        message = row['final_message_string']
+        if row['own_message'] == 1:
+            tox = toxicity_detection(message, client)
+            toxicity.append(tox)
+        else:
+            toxicity.append(np.nan)
 
-    #iterate over chunks and rows to extract toxicity score
-    final_toxic_list = []
-    for chunk in list_df:
-        for i in tqdm(range(len(df))):
-            row = chunk.iloc[i]
-            if row['toxicity'] == 0: 
-                #split message into list of sentences to pass to toxicity detection function
-                tmp = [sent.strip() for sent in re.split(r'[.!?]', row['final_message_string']) if len(sent.split()) > 5]
-
-                if (len(tmp) > 100):
-                    tmp = random.sample(tmp, 100)
-                #print(tmp)
-                if (len(tmp) > 1):
-                    row['toxicity'] = toxicity_detection(tmp, client)
-            chunk.at[chunk.index[i], 'toxicity'] = row['toxicity']
-        final_toxic_list.append(chunk)
-
-    #concat chunks
-    df = pd.concat(final_toxic_list)
+    df['toxicity'] = toxicity
 
 ########## SAVE FILE ##########
-author_date.to_csv(f'../../results/post-aggregation/author_date_{sample_size}.csv.gzip', compression='gzip', index=False)
+# author_date.to_csv(f'../../results/post-aggregation/author_date_{sample_size}.csv.gzip', compression='gzip', index=False)
 author_group.to_csv(f'../../results/post-aggregation/author_group_{sample_size}.csv.gzip', compression='gzip', index=False)
 author.to_csv(f'../../results/post-aggregation/author_{sample_size}.csv.gzip', compression='gzip', index=False)
 print('Post aggregation results saved.')
