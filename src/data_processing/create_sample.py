@@ -128,9 +128,6 @@ messages['final_message_string'] = messages['final_message_string'].str.replace(
 #     preprocessed_messages.append(message)
 # messages['preprocessed_message'] = preprocessed_messages
 
-print(type(messages['final_message_string'].values[0]))
-print(type(messages['fwd_message_string'].values[0]))
-
 if sample_size != 'full':
     messages = messages[(messages['final_message_string'] != '') | (messages['fwd_message_string'] != '')].sample(n=int(sample_size), random_state=random_state)
 else: 

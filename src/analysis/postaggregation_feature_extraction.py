@@ -117,19 +117,33 @@ for df in tqdm([author_group, author], desc='Calculating post-aggregation featur
     df['avg_flesch_reading_ease_class'] = flesch_classes
 
     # ######### TOXICITY SCORE ##########
-
+    
+    # split into chunks to stay under quota limit
+    n = 9500 
+    dfs = [df[i:i+n] for i in range(0, len(df), n)]
+    final_df_list = []
     #initialize list for col
     toxicity = []
 
-    for i in tqdm(range(len(df))):
-        row = df.iloc[i]
-        message = row['final_message_string']
-        if row['own_message'] == 1:
-            tox = toxicity_detection(message, client)
-            toxicity.append(tox)
-        else:
-            toxicity.append(np.nan)
+    #loop over chunks
+    for chunk in tqdm(dfs, desc='Calculating toxicity scores'):
+        # get toxicity score from API
+        for i in range(len(chunk)):
+            row = chunk.iloc[i]
+            message = row['final_message_string']
+            #truncate message to length API can handle
+            if len(message) > 500:
+                message = message[:500]
+            # get toxicity score
+            if row['own_message'] == 1:
+                tox = toxicity_detection(message, client)
+                toxicity.append(tox)
+            # for forwarded messages, set to nan
+            else:
+                toxicity.append(np.nan)
+        time.sleep(2)
 
+    # concat all chunks
     df['toxicity'] = toxicity
 
 ########## SAVE FILE ##########
