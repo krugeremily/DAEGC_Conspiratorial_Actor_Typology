@@ -11,7 +11,7 @@ seaborn==0.13.1
 #nlp
 spacy==3.7.4
 textstat==0.7.3
-transformers==4.41.2 # for sentiment analysis
+transformers==4.fe.2 # for sentiment analysis
 sentencepiece==0.2.0 # for sentiment analysis
 protobuf==5.27.2 # for sentiment analysis
 nltk==3.8.1

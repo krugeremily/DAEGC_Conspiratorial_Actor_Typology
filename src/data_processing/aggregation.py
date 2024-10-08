@@ -4,6 +4,7 @@
 import pandas as pd
 import time
 import argparse
+import os
 
 ########## TIME ##########
 start_time = time.time()
@@ -77,6 +78,8 @@ agg_dict_messages = {
 rename_dict = {'group_or_channel_channel': 'channel_messages', 'group_or_channel_group': 'group_messages', 'UID_key': 'total_message_count'}
 
 ########## AGGREGATE PER AUTHOR&MONTH ##########
+
+os.makedirs('../../data/aggregated', exist_ok = True)
 
 # print('Aggregating per author and month...')
 

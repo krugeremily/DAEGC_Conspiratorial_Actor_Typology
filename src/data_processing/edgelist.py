@@ -41,6 +41,21 @@ edge_weights = Counter(edges)
 edgelist = pd.DataFrame(edge_weights.items(), columns=['edge', 'weight'])
 edgelist[['author_1', 'author_2']] = pd.DataFrame(edgelist['edge'].tolist(), index=edgelist.index)
 edgelist = edgelist.drop(columns='edge')
+print('Edgelist created.')
+
+########## CREATE ADJACENCY MATRIX ##########
+# get list of unique authors
+authors = sorted(set(pre_agg['author']))
+
+# create adjacency matrix
+adj_matrix = pd.DataFrame(0, index=authors, columns=authors)
+
+# fill adjacency matrix with edge weights
+for index, row in edgelist.iterrows():
+    adj_matrix.loc[row['author_1'], row['author_2']] = row['weight']
+    adj_matrix.loc[row['author_2'], row['author_1']] = row['weight']
+print('Adjacency matrix created.')
+
 
 os.create_dir('../../data/edgelists', exist_ok=True)
 edgelist.to_csv(f'../../data/edgelists/author_{sample_size}_edgelist.csv', index=False)

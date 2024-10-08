@@ -126,9 +126,9 @@ for df in tqdm([author_group, author], desc='Calculating post-aggregation featur
     toxicity = []
 
     #loop over chunks
-    for chunk in tqdm(dfs, desc='Calculating toxicity scores'):
+    for chunk in dfs:
         # get toxicity score from API
-        for i in range(len(chunk)):
+        for i in tqdm(range(len(chunk)), desc='Calculating toxicity scores'):
             row = chunk.iloc[i]
             message = row['final_message_string']
             #truncate message to length API can handle
