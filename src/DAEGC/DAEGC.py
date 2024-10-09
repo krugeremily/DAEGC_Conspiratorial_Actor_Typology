@@ -1,3 +1,9 @@
+# This code is based on TIGER101010's implementation of DAEGC in PyTorch 
+# (https://github.com/Tiger101010/DAEGC/tree/main)
+
+#################### DAEGC MODEL TO FINETUNE GAT NODE EMBEDDINGS BASED ON CLUSTERING ####################
+
+########## IMPORTS ##########
 import argparse
 import numpy as np
 
@@ -12,11 +18,12 @@ from torch.optim import Adam
 
 from torch_geometric.datasets import Planetoid
 
-import utils
+import archive.utils as utils
 from GAT import GAT
 from evaluation import eva
 
 
+########## DAEGC MODEL ##########
 class DAEGC(nn.Module):
     def __init__(self, num_features, hidden_size, embedding_size, alpha, num_clusters, v=1):
         super(DAEGC, self).__init__()

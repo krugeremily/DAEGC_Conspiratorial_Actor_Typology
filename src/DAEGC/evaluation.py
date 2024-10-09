@@ -1,3 +1,9 @@
+# This code is based on TIGER101010's implementation of DAEGC in PyTorch 
+# (https://github.com/Tiger101010/DAEGC/tree/main)
+
+#################### EVALUATION METRICS FOR CLUSTERING ####################
+
+########## IMPORTS ##########
 import numpy as np
 from munkres import Munkres
 
@@ -6,6 +12,8 @@ from sklearn.metrics import adjusted_rand_score as ari_score
 from scipy.optimize import linear_sum_assignment as linear
 
 from sklearn import metrics
+
+########## CLUSTERING ACCURACY ##########
 
 # similar to https://github.com/karenlatong/AGC-master/blob/master/metrics.py
 def cluster_acc(y_true, y_pred):

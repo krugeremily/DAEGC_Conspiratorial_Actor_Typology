@@ -8,6 +8,8 @@ import numpy as np
 from itertools import combinations
 from collections import Counter
 from scipy.sparse import coo_matrix
+from sklearn.preprocessing import normalize
+from sklearn.metrics import silhouette_score, calinski_harabasz_score, davies_bouldin_score
 
 ########## CREATE ADJACENCY MATRIX FROM AGGREGATED DF ##########
 
@@ -48,12 +50,66 @@ def create_adj_matrix(dataset):
         data.append(weight)
 
     ########## CONVERT TO TENSOR ##########
+    # original adjacency matrix is used for performance eval
     adj_tensor = torch.sparse_coo_tensor(
         indices=torch.tensor([row_indices, col_indices]),
         values=torch.tensor(data, dtype=torch.float32),
         size=(len(authors), len(authors))
     ).to_dense()
 
-    print('Adjacency matrix created.')
-    return adj_tensor
+    # normalized adjacency matrix with self-loop is used in the model
+    adj_norm = adj_tensor + torch.eye(adj_tensor.shape[0])
+    adj_norm = normalize(adj_norm.numpy(), norm="l1")
+    adj_norm = torch.from_numpy(adj_norm).to(dtype=torch.float)
 
+    return adj_tensor, adj_norm
+
+########## CREATE FEATURE MATRIX FROM AGGREGATED DF ##########
+
+def create_feature_matrix(dataset):
+    dataset = dataset.fillna(0)
+    # Create empty lists for COO sparse matrix format (row, col, data)
+    row_indices = []
+    col_indices = []
+    data = []
+    feature_columns = dataset.columns[1:]
+    feature_columns = [feat for feat in feature_columns if (feat != 'final_message_string') & (feat != 'final_message')]
+
+    # Create mapping of unique authors to indices
+    authors = sorted(set(dataset['author']))
+    author_idx_map = {author: idx for idx, author in enumerate(authors)}
+
+    for idx, row in dataset.iterrows():
+        for col, feature in enumerate(row[feature_columns]): 
+            # to create a sparse matrix, only include non-zero features
+            if feature != 0:
+                row_indices.append(idx)
+                col_indices.append(col)
+                data.append(feature)
+
+    ########## CONVERT TO TENSOR ##########
+    feature_tensor = torch.sparse_coo_tensor(
+        indices=torch.tensor([row_indices, col_indices]),
+        values=torch.tensor(data, dtype=torch.float32),
+        size=(len(dataset), len(feature_columns))
+    ).to_dense()
+
+    print('Feature matrix created.')
+    return feature_tensor
+
+########## GET TRANSITION MATRIX M ##########
+def get_M(adj):
+    adj_numpy = adj.cpu().numpy()
+    # t_order
+    t=2
+    tran_prob = normalize(adj_numpy, norm="l1", axis=0)
+    M_numpy = sum([np.linalg.matrix_power(tran_prob, i) for i in range(1, t + 1)]) / t
+    return torch.Tensor(M_numpy)
+
+########## EVALUATION FUNCTION ##########
+
+def cluster_eval(data, clusters):
+    sil_score = silhouette_score(data, clusters, metric='euclidean')
+    ch_score = calinski_harabasz_score(data, clusters)
+    db_score = davies_bouldin_score(data, clusters)
+    return sil_score, ch_score, db_score
