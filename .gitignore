@@ -1,9 +1,9 @@
 #general
-csh_venv/
+thesis_venv/
 data/
-utils/ClassifierBasedGermanTagger/
 config.py
 archive/
+model/
 
 #temp files
 *.DS_Store

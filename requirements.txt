@@ -1,20 +1,19 @@
-#general
+# general
 numpy==1.26.2
 pandas==2.1.3
 regex==2023.12.25
 argparse==1.4.0
 
-#plotting
+# plotting
 matplotlib==3.8.1
 seaborn==0.13.1
 
-#nlp
-spacy==3.7.4
+# nlp
 textstat==0.7.3
-transformers==4.fe.2 # for sentiment analysis
-sentencepiece==0.2.0 # for sentiment analysis
-protobuf==5.27.2 # for sentiment analysis
-nltk==3.8.1
+transformers==4.41.2 # for sentiment analysis
 scikit-learn==1.5.0
-google-api-python-client==2.137.0
+google-api-python-client==2.137.0 # for google perspective api
+
+# Neural Nets
+torch == 2.2.2
 
