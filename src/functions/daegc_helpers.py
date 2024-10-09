@@ -59,7 +59,7 @@ def create_adj_matrix(dataset):
 
     # normalized adjacency matrix with self-loop is used in the model
     adj_norm = adj_tensor + torch.eye(adj_tensor.shape[0])
-    adj_norm = normalize(adj_norm.numpy(), norm="l1")
+    adj_norm = normalize(adj_norm.numpy(), norm='l1')
     adj_norm = torch.from_numpy(adj_norm).to(dtype=torch.float)
 
     return adj_tensor, adj_norm
@@ -98,11 +98,9 @@ def create_feature_matrix(dataset):
     return feature_tensor
 
 ########## GET TRANSITION MATRIX M ##########
-def get_M(adj):
+def get_M(adj, t=2):
     adj_numpy = adj.cpu().numpy()
-    # t_order
-    t=2
-    tran_prob = normalize(adj_numpy, norm="l1", axis=0)
+    tran_prob = normalize(adj_numpy, norm='l1', axis=0)
     M_numpy = sum([np.linalg.matrix_power(tran_prob, i) for i in range(1, t + 1)]) / t
     return torch.Tensor(M_numpy)
 
