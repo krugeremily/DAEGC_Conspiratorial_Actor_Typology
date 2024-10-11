@@ -78,7 +78,7 @@ def pretrain(dataset, agg_dataset, args=args):
 
     # initialize CSV file for saving performance metrics
     date = datetime.now()
-    metrics_file = f'../../model/GAT_{date}/performance_metrics_{date}.csv'
+    metrics_file = f'../../model/GAT_BASELINE_{date}/performance_metrics_{date}.csv'
     os.makedirs(os.path.dirname(metrics_file), exist_ok=True)
     with open(metrics_file, mode='w', newline='') as file:
         writer = csv.writer(file)
@@ -113,7 +113,7 @@ def pretrain(dataset, agg_dataset, args=args):
                 writer.writerow([epoch + 1, loss.item(), sil_score, ch_score, db_score] + list(vars(args).values()))
 
             # save model state
-            torch.save(model.state_dict(), f'../../model/GAT_{date}/GAT_{epoch}.pkl')
+            torch.save(model.state_dict(), f'../../model/GAT_BASELINE_{date}/epoch_{epoch}.pkl')
 
 ########## MAIN FUNCTION ##########
 
