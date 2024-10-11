@@ -33,7 +33,7 @@ from GAT import GAT
 parser = argparse.ArgumentParser()
 parser.add_argument('--samplesize', type=str, default='200', help = 'Total sample size combined from two datasets as int or "full"')
 parser.add_argument('--max_epoch', type=int, default=50)
-parser.add_argument('--random_iter', type=int, default=10)
+parser.add_argument('--random_iter', type=int, default=10, help='Number of random search iterations')
 parser.add_argument('--lr', type=float, default=0.001)
 parser.add_argument('--n_clusters', default=4, type=int)
 parser.add_argument('--hidden_size', default=256, type=int)
@@ -61,9 +61,15 @@ param_grid = {
 ########## PRETRAIN FUNCTION ##########
 
 # load the dataset and pretrain the GAT model with Adam optimizer
-def pretrain(dataset, agg_dataset, args, writer):
-    # dataset is the not-aggregated data used to create the adjacency matrix; 
-    # agg_dataset is the aggregated data used to create the feature matrix
+def pretrain(config):
+    # set parameters
+    dataset = config['dataset']
+    agg_dataset = config['agg_dataset']
+    args = config['args']
+    writer = config['writer']
+    date = config['date']
+    iteration = config['iteration']
+    
     device = torch.device('cuda' if args.cuda else 'cpu')
 
     #initialize model and optimizer
@@ -75,7 +81,7 @@ def pretrain(dataset, agg_dataset, args, writer):
     ).to(device)
     print(model)
     optimizer = Adam(model.parameters(), lr=args.lr, weight_decay=args.weight_decay)
-    print('Model initialized.')
+    print('GAT Model initialized.')
 
     # process dataset to get adjacency matrix
     adj, adj_norm = create_adj_matrix(dataset)
@@ -111,10 +117,10 @@ def pretrain(dataset, agg_dataset, args, writer):
             sil_score, ch_score, db_score  = cluster_eval(x, kmeans.labels_)
 
             # save performance metrics
-            writer.writerow([epoch, loss.item(), sil_score, ch_score, db_score] + list(vars(args).values()))
+            writer.writerow([epoch, loss.item(), sil_score, ch_score, db_score, iteration] + list(vars(args).values()))
 
             # save model state
-            torch.save(model.state_dict(), f'../../model/GAT_{date}/GAT_{epoch}.pkl')
+            torch.save(model.state_dict(), f'../../model/GAT_{date}/iter_{iteration}_epoch_{epoch}.pkl')
 
 ########## MAIN FUNCTION ##########
 
@@ -128,18 +134,28 @@ if __name__ == "__main__":
 
     print(args)
 
-    # Initialize CSV file for saving performance metrics
+    # initialize CSV file for saving performance metrics
     date = datetime.now()
     metrics_file = f'../../model/GAT_{date}/performance_metrics_{date}.csv'
     os.makedirs(os.path.dirname(metrics_file), exist_ok=True)
     with open(metrics_file, mode='w', newline='') as file:
         writer = csv.writer(file)
-        # Write header
-        writer.writerow(['Epoch', 'Loss', 'Silhouette', 'Calinski-Harabasz', 'Davies-Bouldin'] + list(vars(args).keys()))
+        # write header
+        writer.writerow(['Epoch', 'Loss', 'Silhouette', 'Calinski-Harabasz', 'Davies-Bouldin', 'Random Searchh Iteration'] + list(vars(args).keys()))
 
-        # Perform random search
-        for params in ParameterSampler(param_grid, n_iter=args.random_iter):
+        # perform random search
+        for iteration, params in tqdm(enumerate(ParameterSampler(param_grid, n_iter=args.random_iter)), desc='Random Search'):
             for key, value in params.items():
                 setattr(args, key, value)
             print(f'Training with parameters: {params}')
-            pretrain(dataset, agg_dataset, args, writer)
+            
+            config = {
+                'dataset': dataset, # not-aggregated data used to create the adjacency matrix
+                'agg_dataset': agg_dataset, # aggregated data used to create the feature matrix
+                'args': args,
+                'writer': writer,
+                'date': date,
+                'iteration': iteration
+            }
+
+            pretrain(config)
