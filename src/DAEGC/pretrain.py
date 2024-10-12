@@ -29,7 +29,6 @@ from GAT import GAT
 
 ########## SET PARAMETERS ##########
 
-# default parameters
 parser = argparse.ArgumentParser()
 parser.add_argument('--samplesize', type=str, default='200', help = 'Total sample size combined from two datasets as int or "full"')
 parser.add_argument('--max_epoch', type=int, default=50)
@@ -47,7 +46,11 @@ args.cuda = torch.cuda.is_available()
 print(f'use cuda: {args.cuda}')
 sample_size = args.samplesize
 
-# for random search to find best parameters
+# no additional layers added to GAT compared to baseline mdoel
+args.layers = ['No additional layers']
+
+########## PARAMETER GRID FOR RANDOM SEARCH ##########
+
 param_grid = {
     'lr': [0.001, 0.01, 0.1],
     'n_clusters': [2, 4, 6],

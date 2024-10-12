@@ -31,10 +31,9 @@ from GAT import GAT
 parser = argparse.ArgumentParser()
 parser.add_argument('--samplesize', type=str, default='200', help = 'Total sample size combined from two datasets as int or "full"')
 parser.add_argument('--max_epoch', type=int, default=50)
-#parser.add_argument('--random_iter', type=int, default=10, help='Number of random search iterations')
 parser.add_argument('--lr', type=float, default=0.0001)
-parser.add_argument('--n_clusters', default=4, type=int)
-parser.add_argument('--hidden_size', default=256, type=int)
+parser.add_argument('--n_clusters', default=4, type=int) # needs to be same as in pretrained GAT
+parser.add_argument('--hidden_size', default=256, type=int) # needs to be same as in pretrained GAT
 parser.add_argument('--embedding_size', default=16, type=int)
 parser.add_argument('--weight_decay', type=int, default=5e-3)
 parser.add_argument('--alpha', type=float, default=0.2, help='Alpha for the leaky_relu.')
@@ -132,10 +131,10 @@ def trainer(dataset, agg_dataset, args, writer):
             sil_score, ch_score, db_score = cluster_eval(x, kmeans.labels_)
 
             # Save performance metrics
-            writer.writerow([epoch, kl_loss, re_loss, loss.item(), sil_score, ch_score, db_score] + list(vars(args).values()))
+            writer.writerow([epoch, kl_loss.item(), re_loss.item(), loss.item(), sil_score, ch_score, db_score] + list(vars(args).values()))
 
             # Save model state
-            torch.save(model.state_dict(), f'../../model/DAEGC_{date}/epoch_{epoch}.pkl')
+            torch.save(model.state_dict(), f'../../model/DAEGC_BASELINE_{date}/epoch_{epoch}.pkl')
 
 if __name__ == "__main__":
     device = torch.device("cuda" if args.cuda else "cpu")
@@ -148,7 +147,7 @@ if __name__ == "__main__":
 
     # initialize CSV file for saving performance metrics
     date = datetime.now()
-    metrics_file = f'../../model/DAEGC_{date}/performance_metrics_{date}.csv'
+    metrics_file = f'../../model/DAEGC_BASELINE_{date}/performance_metrics_{date}.csv'
     os.makedirs(os.path.dirname(metrics_file), exist_ok=True)
     with open(metrics_file, mode='w', newline='') as file:
         writer = csv.writer(file)
