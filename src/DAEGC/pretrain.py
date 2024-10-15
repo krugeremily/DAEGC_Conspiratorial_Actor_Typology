@@ -25,6 +25,7 @@ from sklearn.model_selection import ParameterSampler
 
 from functions.daegc_helpers import create_adj_matrix,  create_feature_matrix, get_M, cluster_eval
 from GAT import GAT
+from model_config import param_grid_gat
 
 
 ########## SET PARAMETERS ##########
@@ -48,18 +49,6 @@ sample_size = args.samplesize
 
 # no additional layers added to GAT compared to baseline mdoel
 args.layers = ['No additional layers']
-
-########## PARAMETER GRID FOR RANDOM SEARCH ##########
-
-param_grid = {
-    'lr': [0.001, 0.01, 0.1],
-    'n_clusters': [2, 4, 6],
-    'hidden_size': [128, 256, 512],
-    'embedding_size': [4, 8, 12],
-    'weight_decay': [1e-4, 1e-3, 1e-2],
-    'alpha': [0.1, 0.2, 0.3],
-    't_order': [2, 4, 6]
-}
 
 ########## PRETRAIN FUNCTION ##########
 
@@ -127,7 +116,7 @@ def pretrain(config):
 
 ########## MAIN FUNCTION ##########
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     device = torch.device('cuda' if args.cuda else 'cpu')
 
     dataset = pd.read_csv(f'../../data/samples/messages_sample_{sample_size}.csv.gzip', compression='gzip')
@@ -147,7 +136,7 @@ if __name__ == "__main__":
         writer.writerow(['Epoch', 'Loss', 'Silhouette', 'Calinski-Harabasz', 'Davies-Bouldin', 'Random Searchh Iteration'] + list(vars(args).keys()))
 
         # perform random search
-        for iteration, params in tqdm(enumerate(ParameterSampler(param_grid, n_iter=args.random_iter)), desc='Random Search'):
+        for iteration, params in tqdm(enumerate(ParameterSampler(param_grid_gat, n_iter=args.random_iter)), desc='Random Search'):
             for key, value in params.items():
                 setattr(args, key, value)
             print(f'Training with parameters: {params}')

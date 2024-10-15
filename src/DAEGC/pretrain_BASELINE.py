@@ -22,29 +22,15 @@ from torch.optim import Adam
 
 from sklearn.cluster import KMeans
 
-from functions.daegc_helpers import create_adj_matrix,  create_feature_matrix, get_M, cluster_eval
+from functions.daegc_helpers import parse_args, load_datasets, create_adj_matrix,  create_feature_matrix, get_M, cluster_eval
 from GAT import GAT
 
 
 ########## SET PARAMETERS ##########
 
-parser = argparse.ArgumentParser()
-parser.add_argument('--samplesize', type=str, default='200', help = 'Total sample size combined from two datasets as int or "full"')
-parser.add_argument("--max_epoch", type=int, default=50)
-parser.add_argument("--lr", type=float, default=0.001)
-parser.add_argument("--n_clusters", default=4, type=int)
-parser.add_argument("--hidden_size", default=256, type=int)
-parser.add_argument("--embedding_size", default=16, type=int)
-parser.add_argument("--weight_decay", type=int, default=5e-3)
-parser.add_argument(
-    "--alpha", type=float, default=0.2, help="Alpha for the leaky_relu."
-)
-args = parser.parse_args()
-
+args = parse_args()
 args.cuda = torch.cuda.is_available()
 print(f'use cuda: {args.cuda}')
-
-sample_size = args.samplesize
 
 ########## PRETRAIN FUNCTION ##########
 
@@ -117,12 +103,10 @@ def pretrain(dataset, agg_dataset, args=args):
 
 ########## MAIN FUNCTION ##########
 
-if __name__ == "__main__":
-    device = torch.device("cuda" if args.cuda else "cpu")
+if __name__ == '__main__':
+    device = torch.device('cuda' if args.cuda else 'cpu')
 
-    dataset = pd.read_csv(f'../../data/samples/messages_sample_{sample_size}.csv.gzip', compression='gzip')
-    agg_dataset = pd.read_csv(f'../../data/aggregated/author_{sample_size}.csv.gzip', compression='gzip')
-
+    dataset, agg_dataset = load_datasets(args.sample_size)
     args.input_dim = len(agg_dataset.columns) - 3 # subtract 3 for 'author', 'final_message_string', 'final_message'
 
     print(args)

@@ -1,7 +1,7 @@
 # This code is based on TIGER101010's implementation of DAEGC in PyTorch 
 # (https://github.com/Tiger101010/DAEGC/tree/main)
 
-#################### DAEGC MODEL TO FINETUNE GAT NODE EMBEDDINGS BASED ON CLUSTERING ####################
+#################### SCRIPT TO TRAIN DAEGC MODEL (TO FINETUNE GAT NODE EMBEDDINGS BASED ON CLUSTERING) ####################
 
 ########## IMPORTS ##########
 import sys
@@ -10,8 +10,6 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 sys.path.append('../functions')
 sys.path.append('../../')
 
-import argparse
-import pandas as pd
 from tqdm import tqdm
 import csv
 from datetime import datetime
@@ -19,66 +17,20 @@ from datetime import datetime
 from sklearn.cluster import KMeans
 
 import torch
-import torch.nn as nn
 import torch.nn.functional as F
-from torch.nn.parameter import Parameter
 from torch.optim import Adam
 
-from functions.daegc_helpers import create_adj_matrix,  create_feature_matrix, get_M, cluster_eval
-from GAT import GAT
+from functions.daegc_helpers import parse_args, load_datasets, create_adj_matrix, create_feature_matrix, get_M, target_distribution, cluster_eval
+from DAEGC import DAEGC
+from model_config import pretrain_path
 
 ########## SET PARAMETERS ##########
-parser = argparse.ArgumentParser()
-parser.add_argument('--samplesize', type=str, default='200', help = 'Total sample size combined from two datasets as int or "full"')
-parser.add_argument('--max_epoch', type=int, default=50)
-parser.add_argument('--lr', type=float, default=0.0001)
-parser.add_argument('--n_clusters', default=4, type=int) # needs to be same as in pretrained GAT
-parser.add_argument('--hidden_size', default=256, type=int) # needs to be same as in pretrained GAT
-parser.add_argument('--embedding_size', default=16, type=int)
-parser.add_argument('--weight_decay', type=int, default=5e-3)
-parser.add_argument('--alpha', type=float, default=0.2, help='Alpha for the leaky_relu.')
-parser.add_argument('--t_order', type = int, default = 2, help = 'Order of the transition matrix')
-parser.add_argument('--loss_weight', type=float, default=10, help='Weight for KL Divergence loss')
-args = parser.parse_args()
+args = parse_args()
 
 args.cuda = torch.cuda.is_available()
-print("use cuda: {}".format(args.cuda))
-sample_size = args.samplesize
+print(f'use cuda: {args.cuda}')
 
-########## DAEGC MODEL ##########
-class DAEGC(nn.Module):
-    def __init__(self, num_features, hidden_size, embedding_size, alpha, num_clusters, v=1):
-        super(DAEGC, self).__init__()
-        self.num_clusters = num_clusters
-        self.v = v
-
-        # get pretrained model
-        self.gat = GAT(num_features, hidden_size, embedding_size, alpha)
-        self.gat.load_state_dict(torch.load(args.pretrain_path, map_location='cpu'))
-
-        # cluster layer initialized with xavier
-        self.cluster_layer = Parameter(torch.Tensor(num_clusters, embedding_size))
-        torch.nn.init.xavier_normal_(self.cluster_layer.data)
-
-    # get soft cluster assignment
-    def get_Q(self, z):
-        q = 1.0 / (1.0 + torch.sum(torch.pow(z.unsqueeze(1) - self.cluster_layer, 2), 2) / self.v)
-        q = q.pow((self.v + 1.0) / 2.0)
-        q = (q.t() / torch.sum(q, 1)).t()
-        return q
-    
-    def forward(self, x, adj_norm, M):
-        # get predicted adj matrix and node embeddings z
-        A_pred, z = self.gat(x, adj_norm, M)
-        # get soft cluster assignment
-        q = self.get_Q(z)
-
-        return A_pred, z, q
-
-# compute target distribution from predicted cluster assignment for self-training
-def target_distribution(q):
-    weight = q**2 / q.sum(0)
-    return (weight.t() / weight.sum(1)).t()
+########## TRAINING FUNCTION ##########
 
 def trainer(dataset, agg_dataset, args, writer):
     # dataset is the not-aggregated data used to create the adjacency matrix; 
@@ -136,23 +88,23 @@ def trainer(dataset, agg_dataset, args, writer):
             # Save model state
             torch.save(model.state_dict(), f'../../model/DAEGC_BASELINE_{date}/epoch_{epoch}.pkl')
 
-if __name__ == "__main__":
-    device = torch.device("cuda" if args.cuda else "cpu")
+if __name__ == '__main__':
+    device = torch.device('cuda' if args.cuda else 'cpu')
 
-    dataset = pd.read_csv(f'../../data/samples/messages_sample_{sample_size}.csv.gzip', compression='gzip')
-    agg_dataset = pd.read_csv(f'../../data/aggregated/author_{sample_size}.csv.gzip', compression='gzip')
+    dataset, agg_dataset = load_datasets(args.sample_size)
     
-    args.pretrain_path = '../../model/GAT_BASELINE_2024-10-11 13:00:23.519262/epoch_45.pkl'
+    args.pretrain_path = pretrain_path
     args.input_dim = len(agg_dataset.columns) - 3
 
     # initialize CSV file for saving performance metrics
     date = datetime.now()
     metrics_file = f'../../model/DAEGC_BASELINE_{date}/performance_metrics_{date}.csv'
     os.makedirs(os.path.dirname(metrics_file), exist_ok=True)
+
     with open(metrics_file, mode='w', newline='') as file:
         writer = csv.writer(file)
         # write header
-        writer.writerow(['Epoch', 'KL_Divergence','Recontruction Loss' ,'Ttotal Loss', 'Silhouette', 'Calinski-Harabasz', 'Davies-Bouldin'] + list(vars(args).keys()))
+        writer.writerow(['Epoch', 'KL_Divergence','Recontruction Loss' ,'Total Loss', 'Silhouette', 'Calinski-Harabasz', 'Davies-Bouldin'] + list(vars(args).keys()))
 
         print(args)
         trainer(dataset, agg_dataset, args, writer)
