@@ -28,7 +28,7 @@ class DAEGC(nn.Module):
 
         # get pretrained model
         self.gat = GAT(num_features, hidden_size, embedding_size, alpha)
-        self.gat.load_state_dict(torch.load(pretrain_path, map_location='cpu'))
+        self.gat.load_state_dict(torch.load(pretrain_path, map_location='cpu', weights_only=True))
 
         # cluster layer initialized with xavier
         self.cluster_layer = Parameter(torch.Tensor(num_clusters, embedding_size))
