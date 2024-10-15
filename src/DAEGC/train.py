@@ -98,7 +98,7 @@ def trainer(config):
 if __name__ == '__main__':
     device = torch.device('cuda' if args.cuda else 'cpu')
 
-    dataset, agg_dataset = load_datasets(args.sample_size)
+    dataset, agg_dataset = load_datasets(args.samplesize)
     
     args.pretrain_path = pretrain_path
     args.input_dim = len(agg_dataset.columns) - 3

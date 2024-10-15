@@ -10,8 +10,6 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 sys.path.append('../functions')
 sys.path.append('../../')
 
-import argparse
-import pandas as pd
 from tqdm import tqdm
 import csv
 from datetime import datetime
@@ -106,7 +104,7 @@ def pretrain(dataset, agg_dataset, args=args):
 if __name__ == '__main__':
     device = torch.device('cuda' if args.cuda else 'cpu')
 
-    dataset, agg_dataset = load_datasets(args.sample_size)
+    dataset, agg_dataset = load_datasets(args.samplesize)
     args.input_dim = len(agg_dataset.columns) - 3 # subtract 3 for 'author', 'final_message_string', 'final_message'
 
     print(args)

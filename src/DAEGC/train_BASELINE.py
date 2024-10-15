@@ -26,7 +26,6 @@ from model_config import pretrain_path
 
 ########## SET PARAMETERS ##########
 args = parse_args()
-
 args.cuda = torch.cuda.is_available()
 print(f'use cuda: {args.cuda}')
 
@@ -91,7 +90,7 @@ def trainer(dataset, agg_dataset, args, writer):
 if __name__ == '__main__':
     device = torch.device('cuda' if args.cuda else 'cpu')
 
-    dataset, agg_dataset = load_datasets(args.sample_size)
+    dataset, agg_dataset = load_datasets(args.samplesize)
     
     args.pretrain_path = pretrain_path
     args.input_dim = len(agg_dataset.columns) - 3

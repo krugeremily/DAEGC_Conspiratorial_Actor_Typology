@@ -7,7 +7,6 @@ import torch
 import numpy as np
 from itertools import combinations
 from collections import Counter
-from scipy.sparse import coo_matrix
 from sklearn.preprocessing import normalize
 from sklearn.metrics import silhouette_score, calinski_harabasz_score, davies_bouldin_score
 
@@ -27,6 +26,7 @@ def parse_args():
     parser.add_argument('--alpha', type=float, default=0.2, help='Alpha value for the leaky ReLU activation function')
     parser.add_argument('--t_order', type=int, default=2, help='Order of the transition matrix')
     parser.add_argument('--use_cuda', action='store_true', help='Flag to use CUDA if available')
+    parser.add_argument('--loss_weight', type=float, default=10, help='Weight for KL Divergence loss')
     parser.add_argument('--layers', type=str, default='No additional layers', help='Additional Layers compared to baseline')
     
     return parser.parse_args()
