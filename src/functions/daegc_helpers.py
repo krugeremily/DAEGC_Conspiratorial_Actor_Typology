@@ -46,7 +46,7 @@ def create_adj_matrix(dataset):
     grouped_authors = dataset.groupby('group_name')['author'].apply(set)
 
     # get unique authors and map them to indices
-    authors = sorted(set(dataset['author']))
+    authors = sorted(set(str(author) for author in dataset['author']))
     author_idx_map = {author: idx for idx, author in enumerate(authors)}
 
     # get combinations of two authors in each group

@@ -76,13 +76,15 @@ if sample_size != 'full':
     # take random sample according to samplesize (and some buffer for messages who will be empty after cleaning)
     sample = min(int(sample_size) + 500, len(full_data))
     combined = full_data[(full_data['message'].notnull()) | (full_data['fwd_message'].notnull()) | (full_data['transcribed_message'].notnull())].sample(n=int(sample_size), random_state=random_state)
-
+else:
+    combined = full_data
 ########## CLEAN DATASET ##########
 
 # FROM HERE CODE WORKS FOR BOTH DATASETS
 
 # make sure column is properly formatted for aggregation
 combined['date'] = pd.to_datetime(combined['date']).dt.date
+combined['author'] = combined['author'].str.strip().str.lower()
 
 #for counting own and forwarded messages
 combined['own_message'] = [1 if x or y else 0 for x, y in zip(combined['message'].notnull(), combined['transcribed_message'].notnull())]

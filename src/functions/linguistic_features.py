@@ -1,5 +1,8 @@
 import regex as re
 import spacy
+import time
+from googleapiclient.errors import HttpError
+import numpy as np
 
 ################## HANDLING EMOJIS ##################
 
@@ -83,12 +86,34 @@ def count_pos_tags(text):
 
 ################## TOXICITY SCORE VIA PERSPECTIVE API ##################
 
-def toxicity_detection(message, client):
+# def toxicity_detection(message, client):
+#     analyze_request = {
+#         'comment': { 'text': f"{message}" },
+#         'languages' : ["de"],
+#         'requestedAttributes': {'TOXICITY': {}},
+#     }
+#     response = client.comments().analyze(body=analyze_request).execute()
+#     toxic =response['attributeScores']['TOXICITY']['summaryScore']['value']
+#     return toxic
+
+def toxicity_detection(message, client, retries=3, backoff_factor=2):
     analyze_request = {
-        'comment': { 'text': f"{message}" },
-        'languages' : ["de"],
+        'comment': {'text': f'{message}'},
+        'languages': ['de'],
         'requestedAttributes': {'TOXICITY': {}},
     }
-    response = client.comments().analyze(body=analyze_request).execute()
-    toxic =response['attributeScores']['TOXICITY']['summaryScore']['value']
-    return toxic
+
+    for attempt in range(retries):
+        try:
+            response = client.comments().analyze(body=analyze_request).execute()
+            toxic = response['attributeScores']['TOXICITY']['summaryScore']['value']
+            return toxic  # successful request
+        except:
+            if attempt < retries - 1:
+                # calculate exponential backoff delay
+                wait_time = backoff_factor ** attempt
+                print(f'Request failed. Retrying in {wait_time} seconds...')
+                time.sleep(wait_time)  # wait before retrying
+            else:
+                print('Toxicity timed out')
+                return np.nan # return nan if it fails after 3 attempts
