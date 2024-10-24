@@ -15,7 +15,7 @@ from sklearn.metrics import silhouette_score, calinski_harabasz_score, davies_bo
 def parse_args():
     parser = argparse.ArgumentParser(description='Train a model for node embeddings')
     # Add arguments
-    parser.add_argument('--samplesize', type=str, default='200', help='Total sample size combined from two datasets as int or "full"')
+    parser.add_argument('--samplesize', type=str, default='full', help='Total sample size combined from two datasets as int or "full"')
     parser.add_argument('--max_epoch', type=int, default=50, help='Number of epochs for training')
     parser.add_argument('--random_iter', type=int, default=10, help='Number of random search iterations')
     parser.add_argument('--lr', type=float, default=0.001, help='Learning rate for the optimizer')
@@ -37,6 +37,7 @@ def load_datasets(sample_size):
     # Load the dataset and aggregated dataset
     dataset = pd.read_csv(f'../../data/samples/messages_sample_{sample_size}.csv.gzip', compression='gzip')
     agg_dataset = pd.read_csv(f'../../data/aggregated/author_{sample_size}.csv.gzip', compression='gzip')
+
     return dataset, agg_dataset
 
 ########## CREATE ADJACENCY MATRIX FROM AGGREGATED DF ##########
@@ -90,6 +91,10 @@ def create_adj_matrix(dataset):
     adj_norm = normalize(adj_norm.numpy(), norm='l1')
     adj_norm = torch.from_numpy(adj_norm).to(dtype=torch.float)
 
+    # In create_adj_matrix
+    print(f'Authors: {len(authors)}')
+    print(f'Adjacency tensor shape: {adj_tensor.shape}')
+    print(f'Normalized adjacency tensor shape: {adj_norm.shape}')
     return adj_tensor, adj_norm
 
 ########## CREATE FEATURE MATRIX FROM AGGREGATED DF ##########
@@ -101,10 +106,10 @@ def create_feature_matrix(dataset):
     col_indices = []
     data = []
     feature_columns = dataset.columns[1:]
-    feature_columns = [feat for feat in feature_columns if (feat != 'final_message_string') & (feat != 'final_message')]
+    feature_columns = [feat for feat in feature_columns if (feat != 'final_message_string') & (feat != 'final_message') & (feat != 'author')]
 
     # Create mapping of unique authors to indices
-    authors = sorted(set(dataset['author']))
+    authors = sorted(set(str(dataset['author'])))
     author_idx_map = {author: idx for idx, author in enumerate(authors)}
 
     for idx, row in dataset.iterrows():
@@ -123,6 +128,7 @@ def create_feature_matrix(dataset):
     ).to_dense()
 
     print('Feature matrix created.')
+    print(f'Feature tensor shape: {feature_tensor.shape}')
     return feature_tensor
 
 ########## GET TRANSITION MATRIX M ##########
@@ -130,6 +136,10 @@ def get_M(adj, t=2):
     adj_numpy = adj.cpu().numpy()
     tran_prob = normalize(adj_numpy, norm='l1', axis=0)
     M_numpy = sum([np.linalg.matrix_power(tran_prob, i) for i in range(1, t + 1)]) / t
+
+    # In get_M
+    print(f'Transition matrix shape: {M_numpy.shape}')
+
     return torch.Tensor(M_numpy)
 
 

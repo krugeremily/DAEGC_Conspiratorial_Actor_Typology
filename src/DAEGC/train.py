@@ -105,6 +105,8 @@ if __name__ == '__main__':
 
     # initialize CSV file for saving performance metrics
     date = datetime.now()
+    # change all non alphanumeric characters to underscore
+    date = ''.join(e if e.isalnum() else '_' for e in str(date))
     metrics_file = f'../../model/DAEGC_{date}/performance_metrics_{date}.csv'
     os.makedirs(os.path.dirname(metrics_file), exist_ok=True)
     with open(metrics_file, mode='w', newline='') as file:

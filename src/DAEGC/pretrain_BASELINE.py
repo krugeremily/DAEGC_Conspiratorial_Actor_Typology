@@ -62,6 +62,8 @@ def pretrain(dataset, agg_dataset, args=args):
 
     # initialize CSV file for saving performance metrics
     date = datetime.now()
+    # change all non alphanumeric characters to underscore
+    date = ''.join(e if e.isalnum() else '_' for e in str(date))
     metrics_file = f'../../model/GAT_BASELINE_{date}/performance_metrics_{date}.csv'
     os.makedirs(os.path.dirname(metrics_file), exist_ok=True)
     with open(metrics_file, mode='w', newline='') as file:
@@ -86,17 +88,16 @@ def pretrain(dataset, agg_dataset, args=args):
                 z.data.cpu().numpy()
             )
 
-        # save model sate & performance metrics every 5 epochs
+        # save performance metrics every epoch and model state every 5 epochs
+        # to evaluate the clustering performance, get silhouette score, calinski harabasz score, and davies bouldin score
+        sil_score, ch_score, db_score  = cluster_eval(x, kmeans.labels_)
+
+        # save performance metrics
+        with open(metrics_file, mode='a', newline='') as file:
+            writer = csv.writer(file)
+            writer.writerow([epoch + 1, loss.item(), sil_score, ch_score, db_score] + list(vars(args).values()))
         if epoch % 5 == 0:
-            # to evaluate the clustering performance, get silhouette score, calinski harabasz score, and davies bouldin score
-            sil_score, ch_score, db_score  = cluster_eval(x, kmeans.labels_)
-
-            # save performance metrics
-            with open(metrics_file, mode='a', newline='') as file:
-                writer = csv.writer(file)
-                writer.writerow([epoch + 1, loss.item(), sil_score, ch_score, db_score] + list(vars(args).values()))
-
-            # save model state
+        # save model state
             torch.save(model.state_dict(), f'../../model/GAT_BASELINE_{date}/epoch_{epoch}.pkl')
 
 ########## MAIN FUNCTION ##########
