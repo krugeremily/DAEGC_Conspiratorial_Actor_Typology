@@ -40,6 +40,7 @@ author = pd.read_csv(f'../../data/aggregated/author_{sample_size}.csv.gzip', com
 author['final_message_string'] = author['final_message_string'].astype(str)
 
 print('Extracting post-aggregation features from messages.')
+
 ########## SET UP TOXICITY API ##########
 client = discovery.build(
 "commentanalyzer",

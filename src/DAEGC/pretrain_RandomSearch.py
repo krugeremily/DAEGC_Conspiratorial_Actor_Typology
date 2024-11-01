@@ -1,7 +1,7 @@
 # This code is based on TIGER101010's implementation of DAEGC in PyTorch 
 # (https://github.com/Tiger101010/DAEGC/tree/main)
 
-#################### SCRIPT TO PRETRAIN GAT MODEL FOR NODE EMBEDDINGS ####################
+#################### SCRIPT TO (PRE)TRAIN GAT MODEL FOR NODE EMBEDDINGS ####################
 
 ########## IMPORTS ##########
 import sys
@@ -21,10 +21,11 @@ import torch.nn.functional as F
 from torch.optim import Adam
 
 from sklearn.cluster import KMeans
+from sklearn.model_selection import ParameterSampler
 
 from functions.daegc_helpers import parse_args, load_datasets, create_adj_matrix,  create_feature_matrix, get_M, cluster_eval
 from archive.GAT import GAT
-
+from model_config import param_grid_gat
 
 ########## SET PARAMETERS ##########
 
@@ -32,12 +33,23 @@ args = parse_args()
 args.cuda = torch.cuda.is_available()
 print(f'use cuda: {args.cuda}')
 
+# no additional layers added to GAT compared to baseline mdoel
+args.layers = ['No additional layers']
+args.state = 'Random Search'
+
 ########## PRETRAIN FUNCTION ##########
 
 # load the dataset and pretrain the GAT model with Adam optimizer
-def pretrain(dataset, agg_dataset, args=args):
-    # dataset is the not-aggregated data used to create the adjacency matrix; 
-    # agg_dataset is the aggregated data used to create the feature matrix
+def pretrain(config):
+    # set parameters
+    dataset = config['dataset']
+    agg_dataset = config['agg_dataset']
+    args = config['args']
+    writer = config['writer']
+    date = config['date']
+    iteration = config['iteration']
+    
+    device = torch.device('cuda' if args.cuda else 'cpu')
 
     #initialize model and optimizer
     model = GAT(
@@ -48,7 +60,7 @@ def pretrain(dataset, agg_dataset, args=args):
     ).to(device)
     print(model)
     optimizer = Adam(model.parameters(), lr=args.lr, weight_decay=args.weight_decay)
-    print('Model initialized.')
+    print('GAT Model initialized.')
 
     # process dataset to get adjacency matrix
     adj, adj_norm = create_adj_matrix(dataset)
@@ -56,23 +68,11 @@ def pretrain(dataset, agg_dataset, args=args):
     adj_norm = adj_norm.to(device)
 
     # get transition matrix
-    M = get_M(adj_norm).to(device)
+    M = get_M(adj_norm, t = args.t_order).to(device)
 
     # get feature matrix
     x = create_feature_matrix(agg_dataset)
     print('Adjacency Matrix, Transition Matrix and Feature matrix created.')
-
-    # initialize CSV file for saving performance metrics
-    date = datetime.now()
-    # change all non alphanumeric characters to underscore
-    date = ''.join(e if e.isalnum() else '_' for e in str(date))
-    metrics_file = f'../../model/GAT_{args.state}_{date}/performance_metrics_{date}.csv'
-    os.makedirs(os.path.dirname(metrics_file), exist_ok=True)
-    with open(metrics_file, mode='w', newline='') as file:
-        writer = csv.writer(file)
-        # write header
-        writer.writerow(['Epoch', 'Loss', 'Silhouette', 'Calinski-Harabasz', 'Davies-Bouldin'] + list(vars(args).keys()))
-
 
     # training loop
     for epoch in tqdm(range(args.max_epoch), desc='Training GAT'):
@@ -89,7 +89,7 @@ def pretrain(dataset, agg_dataset, args=args):
             kmeans = KMeans(n_clusters=args.n_clusters, n_init=20).fit(
                 z.data.cpu().numpy()
             )
-        
+
         # to evaluate the clustering performance, get silhouette score, calinski harabasz score, and davies bouldin score
         # check for unique labels to prevent ValueError
         unique_labels = len(set(kmeans.labels_))
@@ -102,13 +102,11 @@ def pretrain(dataset, agg_dataset, args=args):
             print(f'Skipped metrics at epoch {epoch + 1} due to single-class clustering.')
 
         # save performance metrics
-        with open(metrics_file, mode='a', newline='') as file:
-            writer = csv.writer(file)
-            writer.writerow([epoch + 1, loss.item(), sil_score, ch_score, db_score] + list(vars(args).values()))
-
+        writer.writerow([epoch, loss.item(), sil_score, ch_score, db_score, iteration] + list(vars(args).values()))
+        
         # save model sate every 5 epochs and last epoch
-        if epoch % 5 == 0 or epoch == args.max_epoch - 1:
-            torch.save(model.state_dict(), f'../../model/GAT_{args.state}_{date}/epoch_{epoch}.pkl')
+        # if epoch % 5 == 0 or epoch == args.max_epoch - 1:
+        #     torch.save(model.state_dict(), f'../../model/GAT_{date}/iter_{iteration}_epoch_{epoch}.pkl')
 
 
 ########## MAIN FUNCTION ##########
@@ -117,7 +115,35 @@ if __name__ == '__main__':
     device = torch.device('cuda' if args.cuda else 'cpu')
 
     dataset, agg_dataset = load_datasets(args.samplesize)
+    
     args.input_dim = len(agg_dataset.columns) - 4 # subtract 4 for 'author', 'final_message_string', 'final_message', and 'avg_flesch_reading_ease_class'
 
     print(args)
-    pretrain(dataset, agg_dataset)
+
+    # initialize CSV file for saving performance metrics
+    date = datetime.now()
+    # change all non alphanumeric characters to underscore
+    date = ''.join(e if e.isalnum() else '_' for e in str(date))
+    metrics_file = f'../../model/GAT_{date}/performance_metrics_{date}.csv'
+    os.makedirs(os.path.dirname(metrics_file), exist_ok=True)
+    with open(metrics_file, mode='w', newline='') as file:
+        writer = csv.writer(file)
+        # write header
+        writer.writerow(['Epoch', 'Loss', 'Silhouette', 'Calinski-Harabasz', 'Davies-Bouldin', 'Random Searchh Iteration'] + list(vars(args).keys()))
+
+        # perform random search
+        for iteration, params in tqdm(enumerate(ParameterSampler(param_grid_gat, n_iter=args.random_iter)), desc='Random Search'):
+            for key, value in params.items():
+                setattr(args, key, value)
+            print(f'Training with parameters: {params}')
+            
+            config = {
+                'dataset': dataset, # not-aggregated data used to create the adjacency matrix
+                'agg_dataset': agg_dataset, # aggregated data used to create the feature matrix
+                'args': args,
+                'writer': writer,
+                'date': date,
+                'iteration': iteration
+            }
+
+            pretrain(config)

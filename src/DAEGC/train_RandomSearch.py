@@ -10,31 +10,39 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 sys.path.append('../functions')
 sys.path.append('../../')
 
+
+import pandas as pd
 from tqdm import tqdm
 import csv
 from datetime import datetime
 
 import numpy as np
 from sklearn.cluster import KMeans
+from sklearn.model_selection import ParameterSampler
 
 import torch
 import torch.nn.functional as F
 from torch.optim import Adam
 
-from functions.daegc_helpers import parse_args, load_datasets, create_adj_matrix, create_feature_matrix, get_M, target_distribution, cluster_eval
+from functions.daegc_helpers import parse_args, load_datasets, create_adj_matrix,  create_feature_matrix, get_M, target_distribution, cluster_eval
 from DAEGC import DAEGC
-from model_config import pretrain_path
+from model_config import param_grid_daegc, pretrain_path
 
-########## SET PARAMETERS ##########
+########## SET (DEFAULT) PARAMETERS ##########
+
 args = parse_args()
 args.cuda = torch.cuda.is_available()
 print(f'use cuda: {args.cuda}')
 
-########## TRAINING FUNCTION ##########
+def trainer(config):
+    # set parameters
+    dataset = config['dataset'] # not-aggregated data used to create the adjacency matrix; 
+    agg_dataset = config['agg_dataset'] # aggregated data used to create the feature matrix
+    args = config['args']
+    writer = config['writer']
+    date = config['date']
+    iteration = config['iteration']
 
-def trainer(dataset, agg_dataset, args, writer):
-    # dataset is the not-aggregated data used to create the adjacency matrix; 
-    # agg_dataset is the aggregated data used to create the feature matrix
     device = torch.device('cuda' if args.cuda else 'cpu')
 
     # initialize model and optimizer
@@ -77,10 +85,10 @@ def trainer(dataset, agg_dataset, args, writer):
         loss.backward()
         optimizer.step()
 
-
+    
         # Save performance metrics every epoch
         kmeans = KMeans(n_clusters=args.n_clusters).fit(z.detach().cpu().numpy())
-        
+
         # check for unique labels to prevent ValueError
         unique_labels = len(set(kmeans.labels_))
         if unique_labels > 1:
@@ -90,12 +98,13 @@ def trainer(dataset, agg_dataset, args, writer):
             # if only one label, assign nan
             sil_score, ch_score, db_score = np.nan, np.nan, np.nan
             print(f'Skipped metrics at epoch {epoch + 1} due to single-class clustering.')
-        
-        writer.writerow([epoch, kl_loss.item(), re_loss.item(), loss.item(), sil_score, ch_score, db_score] + list(vars(args).values()))
 
-        # save model sate every 5 epochs and last epoch
-        if epoch % 5 == 0 or epoch == args.max_epoch - 1:
-            torch.save(model.state_dict(), f'../../model/DAEGC_{args.state}_{date}/epoch_{epoch}.pkl')
+        writer.writerow([epoch, kl_loss.item(), re_loss.item(), loss.item(), sil_score, ch_score, db_score, iteration] + list(vars(args).values()))
+
+        # Save model state every 5 epochs and last epoch
+        # if epoch % 5 == 0 or epoch == args.max_epoch - 1:
+            # Save model state
+            #torch.save(model.state_dict(), f'../../model/DAEGC_{date}/iter{iteration}_epoch_{epoch}.pkl')
 
 if __name__ == '__main__':
     device = torch.device('cuda' if args.cuda else 'cpu')
@@ -109,13 +118,26 @@ if __name__ == '__main__':
     date = datetime.now()
     # change all non alphanumeric characters to underscore
     date = ''.join(e if e.isalnum() else '_' for e in str(date))
-    metrics_file = f'../../model/DAEGC_{args.state}_{date}/performance_metrics_{date}.csv'
+    metrics_file = f'../../model/DAEGC_{date}/performance_metrics_{date}.csv'
     os.makedirs(os.path.dirname(metrics_file), exist_ok=True)
-
     with open(metrics_file, mode='w', newline='') as file:
         writer = csv.writer(file)
         # write header
-        writer.writerow(['Epoch', 'KL_Divergence','Recontruction Loss' ,'Total Loss', 'Silhouette', 'Calinski-Harabasz', 'Davies-Bouldin'] + list(vars(args).keys()))
+        writer.writerow(['Epoch', 'KL_Divergence','Recontruction Loss' ,'Total Loss', 'Silhouette', 'Calinski-Harabasz', 'Davies-Bouldin', 'Random Searchh Iteration'] + list(vars(args).keys()))
 
-        print(args)
-        trainer(dataset, agg_dataset, args, writer)
+        # perform random search
+        for iteration, params in tqdm(enumerate(ParameterSampler(param_grid_daegc, n_iter=args.random_iter)), desc='Random Search'):
+            for key, value in params.items():
+                setattr(args, key, value)
+            print(f'Training with parameters: {params}')
+            
+            config = {
+                'dataset': dataset, # not-aggregated data used to create the adjacency matrix
+                'agg_dataset': agg_dataset, # aggregated data used to create the feature matrix
+                'args': args,
+                'writer': writer,
+                'date': date,
+                'iteration': iteration
+            }
+
+            trainer(config)

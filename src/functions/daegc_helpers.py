@@ -17,17 +17,16 @@ def parse_args():
     # Add arguments
     parser.add_argument('--samplesize', type=str, default='full', help='Total sample size combined from two datasets as int or "full"')
     parser.add_argument('--max_epoch', type=int, default=50, help='Number of epochs for training')
-    parser.add_argument('--random_iter', type=int, default=10, help='Number of random search iterations')
+    parser.add_argument('--random_iter', type=int, default=15, help='Number of random search iterations')
     parser.add_argument('--lr', type=float, default=0.001, help='Learning rate for the optimizer')
-    parser.add_argument('--n_clusters', type=int, default=4, help='Number of clusters for KMeans')
+    parser.add_argument('--n_clusters', type=int, default=6, help='Number of clusters for KMeans')
     parser.add_argument('--hidden_size', type=int, default=256, help='Number of hidden units in the GAT layers')
     parser.add_argument('--embedding_size', type=int, default=16, help='Size of the output embeddings')
     parser.add_argument('--weight_decay', type=float, default=5e-3, help='Weight decay for regularization')
-    parser.add_argument('--alpha', type=float, default=0.2, help='Alpha value for the leaky ReLU activation function')
-    parser.add_argument('--t_order', type=int, default=2, help='Order of the transition matrix')
+    parser.add_argument('--t_order', type=int, default=3, help='Order of the transition matrix')
     parser.add_argument('--use_cuda', action='store_true', help='Flag to use CUDA if available')
-    parser.add_argument('--loss_weight', type=float, default=10, help='Weight for KL Divergence loss')
     parser.add_argument('--layers', type=str, default='No additional layers', help='Additional Layers compared to baseline')
+    parser.add_argument('--state', type=str, default='BASELINE', help='Baseline, Random Search or Final')
     
     return parser.parse_args()
 
@@ -36,7 +35,7 @@ def parse_args():
 def load_datasets(sample_size):
     # Load the dataset and aggregated dataset
     dataset = pd.read_csv(f'../../data/samples/messages_sample_{sample_size}.csv.gzip', compression='gzip')
-    agg_dataset = pd.read_csv(f'../../data/aggregated/author_{sample_size}.csv.gzip', compression='gzip')
+    agg_dataset = pd.read_csv(f'../../results/post-aggregation/author_{sample_size}.csv.gzip', compression='gzip')
 
     return dataset, agg_dataset
 
@@ -106,7 +105,7 @@ def create_feature_matrix(dataset):
     col_indices = []
     data = []
     feature_columns = dataset.columns[1:]
-    feature_columns = [feat for feat in feature_columns if (feat != 'final_message_string') & (feat != 'final_message') & (feat != 'author')]
+    feature_columns = [feat for feat in feature_columns if (feat != 'final_message_string') & (feat != 'final_message') & (feat != 'author') & (feat != 'avg_flesch_reading_ease_class')]
 
     # Create mapping of unique authors to indices
     authors = sorted(set(str(dataset['author'])))
