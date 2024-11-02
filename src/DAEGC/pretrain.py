@@ -23,7 +23,7 @@ from torch.optim import Adam
 from sklearn.cluster import KMeans
 
 from functions.daegc_helpers import parse_args, load_datasets, create_adj_matrix,  create_feature_matrix, get_M, cluster_eval
-from archive.GAT import GAT
+from GAT import GAT
 
 
 ########## SET PARAMETERS ##########

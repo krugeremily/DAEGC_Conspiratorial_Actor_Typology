@@ -24,7 +24,7 @@ from sklearn.cluster import KMeans
 from sklearn.model_selection import ParameterSampler
 
 from functions.daegc_helpers import parse_args, load_datasets, create_adj_matrix,  create_feature_matrix, get_M, cluster_eval
-from archive.GAT import GAT
+from GAT import GAT
 from model_config import param_grid_gat
 
 ########## SET PARAMETERS ##########
