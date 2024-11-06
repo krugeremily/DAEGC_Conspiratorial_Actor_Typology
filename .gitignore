@@ -8,3 +8,8 @@ model/
 #temp files
 *.DS_Store
 __pycache__
+
+
+# keep model files
+!/model/GAT.pkl
+!/model/DAEGC.pkl
