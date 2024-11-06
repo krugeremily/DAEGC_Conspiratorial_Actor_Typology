@@ -11,5 +11,5 @@ __pycache__
 
 
 # keep model files
-!/model/GAT.pkl
-!/model/DAEGC.pkl
+!model/GAT.pkl
+!model/DAEGC.pkl

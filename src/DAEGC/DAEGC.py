@@ -14,20 +14,19 @@ import torch
 import torch.nn as nn
 from torch.nn.parameter import Parameter
 
-
 from GAT import GAT
 from model_config import pretrain_path
 
 
 ########## DAEGC MODEL ##########
 class DAEGC(nn.Module):
-    def __init__(self, num_features, hidden_size, embedding_size, alpha, num_clusters, v=1):
+    def __init__(self, num_features, hidden_size, embedding_size, num_clusters, v=1):
         super(DAEGC, self).__init__()
         self.num_clusters = num_clusters
         self.v = v
 
         # get pretrained model
-        self.gat = GAT(num_features, hidden_size, embedding_size, alpha)
+        self.gat = GAT(num_features, hidden_size, embedding_size)
         self.gat.load_state_dict(torch.load(pretrain_path, map_location='cpu', weights_only=True))
 
         # cluster layer initialized with xavier

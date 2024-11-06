@@ -1,7 +1,6 @@
 #################### FILE TO DEFINE RANDOM SEARCH VALUES ####################
 
 # PARAMETER GRID FOR RANDOM SEARCH
-
 param_grid_gat = {
 	'lr': [0.001, 0.01, 0.0001],	
 	'hidden_size': [64, 128, 256],	
@@ -13,8 +12,8 @@ param_grid_gat = {
 param_grid_daegc = {
     'lr': [0.0001, 0.001, 0.01],
     'n_clusters': [4, 5, 6],
-    'weight_decay': [1e-4, 1e-3, 5e-4, 5e-3, 1e-2],
-    't_order': [2, 3, 4, 6, 8, 10]
+    'weight_decay': [1e-4, 1e-3, 5e-4, 5e-3],
+    't_order': [2, 3, 4, 6]
 }
 
-pretrain_path = '../../model/GAT_FINAL_2024_10_25_17_23_06_569938/epoch_90.pkl'
+pretrain_path = '../../model/GAT.pkl'

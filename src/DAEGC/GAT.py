@@ -12,11 +12,10 @@ import torch.nn.functional as F
 ########## GAT LAYER ##########
 class GATLayer(nn.Module):
 
-    def __init__(self, in_features, out_features, alpha=0.2):
+    def __init__(self, in_features, out_features):
         super(GATLayer, self).__init__()
         self.in_features = in_features
         self.out_features = out_features
-        self.alpha = alpha
 
         # initialize weight and attention parameters for self and neighbors with xavier uniform (non-zero)
         self.W = nn.Parameter(torch.zeros(size=(in_features, out_features)))
@@ -28,7 +27,7 @@ class GATLayer(nn.Module):
         self.a_neighs = nn.Parameter(torch.zeros(size=(out_features, 1)))
         nn.init.xavier_uniform_(self.a_neighs.data, gain=1.414)
 
-        self.leakyrelu = nn.LeakyReLU(self.alpha)
+        self.leakyrelu = nn.LeakyReLU(0.2)
 
 
     def forward(self, input, adj, M, concat=True):
@@ -67,27 +66,22 @@ class GATLayer(nn.Module):
 ########## GAT MODEL ##########
 
 class GAT(nn.Module):
-    def __init__(self, num_features, hidden_size, embedding_size, alpha):
+    def __init__(self, num_features, hidden_size, embedding_size):
         super(GAT, self).__init__()
         self.hidden_size = hidden_size
         self.embedding_size = embedding_size
-        self.alpha = alpha
-        self.conv1 = GATLayer(num_features, hidden_size, alpha)
-        self.conv2 = GATLayer(hidden_size, embedding_size, alpha)
-        # self.conv3 = GATLayer(hidden_size, hidden_size, alpha)
-        # self.conv4 = GATLayer(hidden_size, embedding_size, alpha)
+        self.conv1 = GATLayer(num_features, hidden_size)
+        self.conv2 = GATLayer(hidden_size, embedding_size)
 
     # to compute dot product between embeddings to predict adjacency matrix
     def dot_product_decode(self, Z):
         A_pred = torch.sigmoid(torch.matmul(Z, Z.t()))
         return A_pred
 
-    # forward pass wtih four GAT layers
+    # forward pass with two GAT layers
     def forward(self, x, adj, M):
         h = self.conv1(x, adj, M)
         h = self.conv2(h, adj, M)
-        # h = self.conv3(h, adj, M)
-        # h = self.conv4(h, adj, M)
         z = F.normalize(h, p=2, dim=1)
         A_pred = self.dot_product_decode(z)
         return A_pred, z

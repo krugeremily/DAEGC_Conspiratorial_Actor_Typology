@@ -43,8 +43,7 @@ def pretrain(dataset, agg_dataset, args=args):
     model = GAT(
         num_features=args.input_dim,
         hidden_size=args.hidden_size,
-        embedding_size=args.embedding_size,
-        alpha=0.2,
+        embedding_size=args.embedding_size
     ).to(device)
     print(model)
     optimizer = Adam(model.parameters(), lr=args.lr, weight_decay=args.weight_decay)
@@ -106,8 +105,8 @@ def pretrain(dataset, agg_dataset, args=args):
             writer = csv.writer(file)
             writer.writerow([epoch + 1, loss.item(), sil_score, ch_score, db_score] + list(vars(args).values()))
 
-        # save model sate every 5 epochs and last epoch
-        if epoch % 5 == 0 or epoch == args.max_epoch - 1:
+        # save model state every epoch for the second half of training
+        if args.state == 'FINAL' and epoch >= ((args.max_epoch - 1) /2):
             torch.save(model.state_dict(), f'../../model/GAT_{args.state}_{date}/epoch_{epoch}.pkl')
 
 

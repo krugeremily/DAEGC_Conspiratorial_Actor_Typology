@@ -47,7 +47,7 @@ def trainer(config):
 
     # initialize model and optimizer
     model = DAEGC(num_features=args.input_dim, hidden_size=args.hidden_size,
-                  embedding_size=args.embedding_size, alpha=0.2, num_clusters=args.n_clusters).to(device)
+                  embedding_size=args.embedding_size, num_clusters=args.n_clusters).to(device)
     print(model)
     optimizer = Adam(model.parameters(), lr=args.lr, weight_decay=args.weight_decay)
     print('DAEGC Model initialized.')

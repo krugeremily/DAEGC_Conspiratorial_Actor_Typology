@@ -56,7 +56,6 @@ def pretrain(config):
         num_features=args.input_dim,
         hidden_size=args.hidden_size,
         embedding_size=args.embedding_size,
-        alpha=0.2,
     ).to(device)
     print(model)
     optimizer = Adam(model.parameters(), lr=args.lr, weight_decay=args.weight_decay)

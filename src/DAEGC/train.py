@@ -39,7 +39,7 @@ def trainer(dataset, agg_dataset, args, writer):
 
     # initialize model and optimizer
     model = DAEGC(num_features=args.input_dim, hidden_size=args.hidden_size,
-                  embedding_size=args.embedding_size, alpha=0.2, num_clusters=args.n_clusters).to(device)
+                  embedding_size=args.embedding_size, num_clusters=args.n_clusters).to(device)
     print(model)
     optimizer = Adam(model.parameters(), lr=args.lr, weight_decay=args.weight_decay)
     print('DAEGC Model initialized.')
@@ -93,8 +93,8 @@ def trainer(dataset, agg_dataset, args, writer):
         
         writer.writerow([epoch, kl_loss.item(), re_loss.item(), loss.item(), sil_score, ch_score, db_score] + list(vars(args).values()))
 
-        # save model sate every 5 epochs and last epoch
-        if epoch % 5 == 0 or epoch == args.max_epoch - 1:
+        # save model state every epoch for the second half of training
+        if args.state == 'FINAL' and epoch >= ((args.max_epoch - 1) /2):
             torch.save(model.state_dict(), f'../../model/DAEGC_{args.state}_{date}/epoch_{epoch}.pkl')
 
 if __name__ == '__main__':
