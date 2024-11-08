@@ -13,8 +13,9 @@ sys.path.append('../../')
 import torch
 import torch.nn as nn
 from torch.nn.parameter import Parameter
+import torch.nn.functional as F
 
-from GAT import GAT
+from GAT import GAT, GATLayer
 from model_config import pretrain_path
 
 
@@ -28,6 +29,15 @@ class DAEGC(nn.Module):
         # get pretrained model
         self.gat = GAT(num_features, hidden_size, embedding_size)
         self.gat.load_state_dict(torch.load(pretrain_path, map_location='cpu', weights_only=True))
+        
+        # freeze pretrained gat parameters 
+        for param in self.gat.parameters(): 
+            param.requires_grad = False
+
+        # additional GAT layers
+        self.gat_layer1 = GATLayer(embedding_size, hidden_size)
+        self.gat_layer2 = GATLayer(hidden_size, hidden_size)
+        self.gat_layer3 = GATLayer(hidden_size, embedding_size)
 
         # cluster layer initialized with xavier
         self.cluster_layer = Parameter(torch.Tensor(num_clusters, embedding_size))
@@ -43,6 +53,10 @@ class DAEGC(nn.Module):
     def forward(self, x, adj_norm, M):
         # get predicted adj matrix and node embeddings z
         A_pred, z = self.gat(x, adj_norm, M)
+        h = self.gat_layer1(z, adj_norm, M)
+        h = self.gat_layer2(h, adj_norm, M)
+        h = self.gat_layer3(h, adj_norm, M)
+        z = F.normalize(h, p=2, dim=1)
         # get soft cluster assignment
         q = self.get_Q(z)
 
