@@ -19,16 +19,18 @@ class GATLayer(nn.Module):
 
         # initialize weight and attention parameters for self and neighbors with xavier uniform (non-zero)
         self.W = nn.Parameter(torch.zeros(size=(in_features, out_features)))
-        nn.init.xavier_uniform_(self.W.data, gain=1.414)
+        # nn.init.xavier_uniform_(self.W.data, gain=1.414)
+        nn.init.kaiming_uniform_(self.W.data, mode='fan_out', nonlinearity='leaky_relu')
 
         self.a_self = nn.Parameter(torch.zeros(size=(out_features, 1)))
-        nn.init.xavier_uniform_(self.a_self.data, gain=1.414)
+        # nn.init.xavier_uniform_(self.a_self.data, gain=1.414)
+        nn.init.kaiming_uniform_(self.a_self.data, mode='fan_out', nonlinearity='leaky_relu')
 
         self.a_neighs = nn.Parameter(torch.zeros(size=(out_features, 1)))
-        nn.init.xavier_uniform_(self.a_neighs.data, gain=1.414)
+        # nn.init.xavier_uniform_(self.a_neighs.data, gain=1.414)
+        nn.init.kaiming_uniform_(self.a_neighs.data, mode='fan_out', nonlinearity='leaky_relu')
 
-        self.leakyrelu = nn.LeakyReLU(0.2)
-
+        self.leakyrelu = nn.LeakyReLU(0.05)
 
     def forward(self, input, adj, M, concat=True):
         
