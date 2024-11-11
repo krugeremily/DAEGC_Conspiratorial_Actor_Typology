@@ -82,26 +82,8 @@ def pretrain(config):
         loss.backward()
         optimizer.step()
 
-        # clustering and evaluation
-        with torch.no_grad():
-            _, z = model(x, adj_norm, M)
-            kmeans = KMeans(n_clusters=args.n_clusters, n_init=20).fit(
-                z.data.cpu().numpy()
-            )
-
-        # to evaluate the clustering performance, get silhouette score, calinski harabasz score, and davies bouldin score
-        # check for unique labels to prevent ValueError
-        unique_labels = len(set(kmeans.labels_))
-        if unique_labels > 1:
-            # only calculate metrics if more than one unique label is present
-            sil_score, ch_score, db_score = cluster_eval(x, kmeans.labels_)
-        else:
-            # if only one label, assign nan
-            sil_score, ch_score, db_score = np.nan, np.nan, np.nan
-            print(f'Skipped metrics at epoch {epoch + 1} due to single-class clustering.')
-
         # save performance metrics
-        writer.writerow([epoch, loss.item(), sil_score, ch_score, db_score, iteration] + list(vars(args).values()))
+        writer.writerow([epoch, loss.item(), iteration] + list(vars(args).values()))
         
         # save model sate every 5 epochs and last epoch
         # if epoch % 5 == 0 or epoch == args.max_epoch - 1:
@@ -128,7 +110,7 @@ if __name__ == '__main__':
     with open(metrics_file, mode='w', newline='') as file:
         writer = csv.writer(file)
         # write header
-        writer.writerow(['Epoch', 'Loss', 'Silhouette', 'Calinski-Harabasz', 'Davies-Bouldin', 'Random Searchh Iteration'] + list(vars(args).keys()))
+        writer.writerow(['Epoch', 'Loss', 'Random Searchh Iteration'] + list(vars(args).keys()))
 
         # perform random search
         for iteration, params in tqdm(enumerate(ParameterSampler(param_grid_gat, n_iter=args.random_iter)), desc='Random Search'):

@@ -70,7 +70,7 @@ def pretrain(dataset, agg_dataset, args=args):
     with open(metrics_file, mode='w', newline='') as file:
         writer = csv.writer(file)
         # write header
-        writer.writerow(['Epoch', 'Loss', 'Silhouette', 'Calinski-Harabasz', 'Davies-Bouldin'] + list(vars(args).keys()))
+        writer.writerow(['Epoch', 'Loss'] + list(vars(args).keys()))
 
 
     # training loop
@@ -80,30 +80,22 @@ def pretrain(dataset, agg_dataset, args=args):
         loss = F.mse_loss(A_pred.view(-1), adj.view(-1))
         optimizer.zero_grad()
         loss.backward()
+
+        # Print gradients for each layer after backward pass
+        print(f'Epoch {epoch+1} gradients:')
+        for name, param in model.named_parameters():
+            if param.grad is not None:
+                print(f'Layer: {name} | Grad Mean: {param.grad.mean().item():.4f} | Grad Std: {param.grad.std().item():.4f} | Grad Norm: {param.grad.norm().item():.4f}')
+            else:
+                print(f'Layer: {name} has no gradient')
+
         optimizer.step()
 
-        # clustering and evaluation
-        with torch.no_grad():
-            _, z = model(x, adj_norm, M)
-            kmeans = KMeans(n_clusters=args.n_clusters, n_init=20).fit(
-                z.data.cpu().numpy()
-            )
-        
-        # to evaluate the clustering performance, get silhouette score, calinski harabasz score, and davies bouldin score
-        # check for unique labels to prevent ValueError
-        unique_labels = len(set(kmeans.labels_))
-        if unique_labels > 1:
-            # only calculate metrics if more than one unique label is present
-            sil_score, ch_score, db_score = cluster_eval(x, kmeans.labels_)
-        else:
-            # if only one label, assign nan
-            sil_score, ch_score, db_score = np.nan, np.nan, np.nan
-            print(f'Skipped metrics at epoch {epoch + 1} due to single-class clustering.')
 
         # save performance metrics
         with open(metrics_file, mode='a', newline='') as file:
             writer = csv.writer(file)
-            writer.writerow([epoch + 1, loss.item(), sil_score, ch_score, db_score] + list(vars(args).values()))
+            writer.writerow([epoch + 1, loss.item()] + list(vars(args).values()))
 
         # save model state every epoch for the second half of training
         if args.state == 'FINAL' and epoch >= ((args.max_epoch - 1) /2):
