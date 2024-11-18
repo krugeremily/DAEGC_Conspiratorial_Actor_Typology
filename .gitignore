@@ -4,6 +4,7 @@ data/
 config.py
 archive/
 model/
+results/
 
 #temp files
 *.DS_Store
