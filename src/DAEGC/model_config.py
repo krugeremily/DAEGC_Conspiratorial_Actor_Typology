@@ -11,9 +11,13 @@ param_grid_gat = {
 # PARAMETER GRID FOR RANDOM SEARCH
 param_grid_daegc = {
     'lr': [0.0001, 0.001, 0.01],
-    'n_clusters': [4, 5, 6],
+    'n_clusters': [3, 4, 5, 6],
     'weight_decay': [1e-4, 1e-3, 5e-4, 5e-3],
     't_order': [2, 3, 4, 6]
 }
 
 pretrain_path = '../../model/GAT.pkl'
+
+model_path_3 = '../../model/DAEGC_3clusters.pkl'
+model_path_4 = '../../model/DAEGC_4clusters.pkl'
+model_path_5 = '../../model/DAEGC_5clusters.pkl'
