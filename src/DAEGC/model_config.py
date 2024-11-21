@@ -18,6 +18,4 @@ param_grid_daegc = {
 
 pretrain_path = '../../model/GAT.pkl'
 
-model_path_3 = '../../model/DAEGC_3clusters.pkl'
-model_path_4 = '../../model/DAEGC_4clusters.pkl'
-model_path_5 = '../../model/DAEGC_5clusters.pkl'
+model_path = '../../model/DAEGC.pkl'

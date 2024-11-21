@@ -8,14 +8,15 @@ argparse==1.4.0
 matplotlib==3.8.1
 seaborn==0.13.1
 
-# nlp
+# NLP
 textstat==0.7.3
-transformers==4.41.2 # for sentiment analysis
-scikit-learn==1.5.0
-google-api-python-client==2.137.0 # for google perspective api
+transformers==4.41.2
+google-api-python-client==2.137.0
 
-# Neural Nets
+# neural nets
 torch == 2.2.2
-torchview==0.2.6
-graphviz==0.20.3
+
+# stats
+scikit-learn==1.5.0
+statsmodels==0.14.4
 
