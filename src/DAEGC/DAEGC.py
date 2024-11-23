@@ -15,8 +15,8 @@ import torch.nn as nn
 from torch.nn.parameter import Parameter
 import torch.nn.functional as F
 
-from GAT import GAT, GATLayer
-from model_config import pretrain_path
+from src.DAEGC.GAT import GAT, GATLayer
+from src.DAEGC.model_config import pretrain_path
 
 
 ########## DAEGC MODEL ##########
