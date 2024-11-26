@@ -19,6 +19,4 @@ torch == 2.2.2
 # stats
 scikit-learn==1.5.0
 statsmodels==0.14.4
-
-# shap
-shap==0.46.0
+imblearn
