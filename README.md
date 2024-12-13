@@ -1,11 +1,7 @@
-# CSH Internship
+# # Testing Deep Attentional Embedded Graph Clustering (DAEGC) to Create a Typology of Conspiratorial Actors
 
-**Instructions:**
-- install requirements.txt
-- python -m spacy download de_core_news_sm
-- create config.py file for access to Google API
-- export KMP_DUPLICATE_LIB_OK=TRUE before running troch scripts
+## Overall
 
-**To Do:**
-- write SETUP file that creates venv, installs requirements and loads spacy?
-- cite Max properly
+This is the (final) code accompanying my Master's Thesis for the M.Sc. in Social Data Science at the University of Copenhagen.
+
+tbd.
