@@ -1,0 +1,21 @@
+#general
+thesis_venv/
+data/
+config.py
+archive/
+
+#temp files
+*.DS_Store
+__pycache__
+
+
+# keep model files
+!model/
+model/*
+!model/GAT.pkl
+!model/DAEGC.pkl
+
+# only keep one results file
+!results/
+results/*
+!results/author_full_features_and_clusters.csv.gzip
